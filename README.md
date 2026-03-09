@@ -1,8 +1,18 @@
-# candy-crush
+# Candy Crush
 
-Projet ISN S2
+> Projet ISN S2
+>
+> Groupe :
+>
+> - Matthieu
+> - Théo
+> - Arthur
+
+Pour le moment, nous allons partir sur le niveau 1, mais on va surement rajouter des petites améliorations dans le résultat final.
 
 ## Algorithme en pseudo code
+
+L'algorithme suivant sera ensuite placé dans la fonction `candy_crush`.
 
 ```txt
 Charger la grille depuis le fichier csv
@@ -15,15 +25,15 @@ Tant que le jeu n'est pas bloqué et que l'utilisateur n'a pas atteint le nombre
         Calculer la nouvelle grille
 ```
 
-## Découpage fonctionnel
+## Découpage fonctionnel (liste des fonctions)
 
-- M charger_grille
-- A jeu_est_bloque
-- T afficher_grille
-- M demander_mouvement
-- A echanger_deux_bonbons
-- T grille_est_stable
-- M calculer_nouvelle_grille
+- charger_grille
+- jeu_est_bloque
+- afficher_grille
+- demander_mouvement
+- echanger_deux_bonbons
+- grille_est_stable
+- calculer_nouvelle_grille
 
 ## Sous tâches
 
