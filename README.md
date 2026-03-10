@@ -25,15 +25,30 @@ Tant que le jeu n'est pas bloqué et que l'utilisateur n'a pas atteint le nombre
         Calculer la nouvelle grille
 ```
 
+Décomposition du calcul de la nouvelle grille :
+
+```txt
+Créer une nouvelle grille (duplication de la première)
+Supprimer tous les bonbons qui forment une ligne de 3 par rapport à la première grille
+Appliquer la gravité et descendre tous les bonbons volants
+Remplir les emplacements vides par de nouveux bonbons aléatoires
+```
+
 ## Découpage fonctionnel (liste des fonctions)
 
-- charger_grille
-- jeu_est_bloque
-- afficher_grille
-- demander_mouvement
-- echanger_deux_bonbons
-- grille_est_stable
-- calculer_nouvelle_grille
+| Fonction                   | Chargé de la réalisation | Terminé |
+| -------------------------- | ------------------------ | ------- |
+| charger_grille             | Tout le monde            | Non     |
+| jeu_est_bloque             | Matthieu                 | Non     |
+| afficher_grille            | Arthur                   | Non     |
+| demander_mouvement         | Théo                     | Non     |
+| echanger_deux_bonbons      | Matthieu                 | Non     |
+| grille_est_stable          | Théo                     | Non     |
+| calculer_nouvelle_grille   | Arthur                   | Non     |
+| dupliquer_grille           | Théo                     | Non     |
+| supprimer_bonbons_en_ligne | Matthieu                 | Non     |
+| appliquer_gravite          | Théo                     | Non     |
+| ajouter_bonbons_aleatoires | Arthur                   | Non     |
 
 ## Sous tâches
 
@@ -146,6 +161,70 @@ def calculer_nouvelle_grille(grille: list[list[int]]) -> list[list[int]]:
 
     Return:
         - nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
+
+    """
+```
+
+### dupliquer_grille
+
+```py
+def dupliquer_grille(grille: list[list[int]]) -> list[list[int]]:
+    """
+    Créé une nouvelle grille identique à la première
+
+    Params:
+        - grille (liste 2D) : la grille d'origine
+
+    Return:
+        - nouvelle_grille (liste 2D) : copie de la grille d'origine
+
+    """
+```
+
+### supprimer_bonbons_en_ligne
+
+```py
+def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
+    """
+    Duplique la grille et supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés. Supprime les bonbons par rapport à la grille de référence qui à été dupliqué. Retourne la nouvelle grille sans les bonbons formant des lignes
+
+    Params:
+        - grille (liste 2D) : la grille d'origine
+
+    Return:
+        - nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
+
+    """
+```
+
+### appliquer_gravite
+
+```py
+def appliquer_gravite(grille: list[list[int]]):
+    """
+    Modifie la grille donnée pour faire descendre tout les bonbons avec des emplacements vide en dessous comme si l'on appliquait la gravité à la grille
+
+    Params:
+        - grille (liste 2D) : la grille 2D de bonbons
+
+    Return:
+        None.
+
+    """
+```
+
+### ajouter_bonbons_aleatoires
+
+```py
+def ajouter_bonbons_aleatoires(grille: list[list[int]]):
+    """
+    Modifie la grille donnée pour ajouter des bonbons aléatoires aux emplacements vides
+
+    Params:
+        - grille (liste 2D) : la grille 2D de bonbons
+
+    Return:
+        None.
 
     """
 ```
