@@ -42,7 +42,7 @@ Remplir les emplacements vides par de nouveux bonbons aléatoires
 | jeu_est_bloque             | Matthieu                 | Non     |
 | afficher_grille            | Arthur                   | Non     |
 | demander_mouvement         | Théo                     | Non     |
-| echanger_deux_bonbons      | Matthieu                 | Non     |
+| echanger_deux_bonbons      | Matthieu                 | Oui     |
 | grille_est_stable          | Théo                     | Non     |
 | calculer_nouvelle_grille   | Arthur                   | Non     |
 | dupliquer_grille           | Théo                     | Non     |
