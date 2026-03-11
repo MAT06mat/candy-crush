@@ -66,7 +66,7 @@ class Grille:
 root = Tk()
 root.title("Candy Crush")
 frame = ttk.Frame(root, padding=10)
-# g = charger_grille("exemple_grille.csv")
+# g = charger_grille("data/exemple_grille.csv")
 g = generer_grille(7, 6)
 frame2 = ttk.Frame(frame, padding=10)
 Grille(frame2, g)

@@ -130,5 +130,5 @@ def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
 
 
 if __name__ == "__main__":
-    g = charger_grille("exemple_grille.csv")
+    g = charger_grille("data/exemple_grille.csv")
     afficher_grille(g)
