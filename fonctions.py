@@ -1,4 +1,5 @@
 from random import choice
+from copy import deepcopy
 
 
 def charger_grille(fichier: str):
@@ -38,22 +39,26 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4):
 
     """
 
+    if m < 3 or n < 3:
+        raise ValueError("Le nombre minimum de ligne et de colonne est 2")
+
     if nb_couleurs < 3:
-        raise ValueError("Le nombre de couleurs minimum pour une grille est 3")
+        raise ValueError("Le nombre minimum de couleurs pour une grille est 3")
 
     grille = []
     for y in range(m):
         ligne = []
         for x in range(n):
             colors = list(range(nb_couleurs))
-            if x >= 2 and ligne[x - 1] == ligne[x - 2]:
-                colors.remove(ligne[x - 1])
-            if (
-                y >= 2
-                and grille[y - 1][x] == grille[y - 2][x]
-                and grille[y - 1][x] in colors
-            ):
-                colors.remove(grille[y - 1][x])
+
+            if x >= 2 and ligne[x - 1] in colors:
+                if ligne[x - 2] == ligne[x - 1]:
+                    colors.remove(ligne[x - 1])
+
+            if y >= 2 and grille[y - 1][x] in colors:
+                if grille[y - 2][x] == grille[y - 1][x]:
+                    colors.remove(grille[y - 1][x])
+
             ligne.append(choice(colors))
         grille.append(ligne)
     return grille
@@ -91,6 +96,35 @@ def afficher_grille(grille):
 
     for ligne in grille:
         print(*ligne)
+
+
+def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
+    """
+    Duplique la grille et supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés. Supprime les bonbons par rapport à la grille de référence qui à été dupliqué. Retourne la nouvelle grille sans les bonbons formant des lignes
+
+    Params:
+        - grille (liste 2D) : la grille d'origine
+
+    Return:
+        - nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
+
+    """
+    # À remplacer par la fonction de copie de la grille
+    nouvelle_grille = deepcopy(grille)
+
+    for y in range(len(grille)):
+        for x in range(len(grille[y])):
+            if x >= 2:
+                if grille[y][x - 2] == grille[y][x - 1] == grille[y][x]:
+                    nouvelle_grille[y][x - 2] = -1
+                    nouvelle_grille[y][x - 1] = -1
+                    nouvelle_grille[y][x] = -1
+            if y >= 2:
+                if grille[y - 2][x] == grille[y - 1][x] == grille[y][x]:
+                    nouvelle_grille[y - 2][x] = -1
+                    nouvelle_grille[y - 1][x] = -1
+                    nouvelle_grille[y][x] = -1
+    return nouvelle_grille
 
 
 if __name__ == "__main__":
