@@ -100,7 +100,9 @@ def afficher_grille(grille):
 
 def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
     """
-    Duplique la grille et supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés. Supprime les bonbons par rapport à la grille de référence qui à été dupliqué. Retourne la nouvelle grille sans les bonbons formant des lignes
+    Duplique la grille et supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
+    Supprime les bonbons par rapport à la grille de référence qui à été dupliqué.
+    Retourne la nouvelle grille sans les bonbons formant des lignes (ils sont remplacés par des -1)
 
     Params:
         - grille (liste 2D) : la grille d'origine
