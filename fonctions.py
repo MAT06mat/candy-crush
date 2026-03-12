@@ -42,8 +42,10 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4):
     if m < 3 or n < 3:
         raise ValueError("Le nombre minimum de ligne et de colonne est 2")
 
-    if nb_couleurs < 3:
-        raise ValueError("Le nombre minimum de couleurs pour une grille est 3")
+    if nb_couleurs < 3 or nb_couleurs > 6:
+        raise ValueError(
+            "Le nombre min de couleurs pour une grille est 3 et le max est 6"
+        )
 
     grille = []
     for y in range(m):
@@ -217,7 +219,7 @@ def jeu_est_bloque(grille):
                         return False
                 # Ligne verticale en haut
                 if y - 2 >= 0:
-                    if g[y - 2][x] == g[y - 1][x] == g[y][x + 1]:
+                    if g[y - 2][x] == g[y - 1][x] == g[y + 1][x]:
                         return False
     return True
 
