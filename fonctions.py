@@ -129,6 +129,116 @@ def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
     return nouvelle_grille
 
 
+def jeu_est_bloque(grille):
+    """
+    Analyse la grille est renvoie True si grille bloquée, False sinon (non bloquée)
+
+    Params :
+        - grille (liste 2D) : grille du jeu à analyser
+
+    Return :
+        - bloquée (bool) : True si grille bloquée, False grille non bloquée
+    """
+    # Création de raccourcis pour le reste du code
+    g = grille
+    w_g = len(g[0])
+    h_g = len(g)
+
+    # Pour chaque bonbon, on test son échange avec un bonbon à droite et un bonbon en dessous
+    for y in range(h_g):
+        for x in range(w_g):
+            # Échange vers la droite
+            if x + 1 < w_g:
+                # 1) Bonbon échangé vers la droite
+                # Ligne verticale en haut
+                if y - 2 >= 0:
+                    if g[y - 2][x + 1] == g[y - 1][x + 1] == g[y][x]:
+                        print("Bonbon", x, y, "echange d ligne v h")
+                        return False
+                # Ligne verticale milieu
+                if y - 1 >= 0 and y + 1 < h_g:
+                    if g[y - 1][x + 1] == g[y][x] == g[y + 1][x + 1]:
+                        print("Bonbon", x, y, "echange d ligne v m")
+                        return False
+                # Ligne verticale en bas
+                if y + 2 < h_g:
+                    if g[y][x] == g[y + 1][x + 1] == g[y + 2][x + 1]:
+                        print("Bonbon", x, y, "echange d ligne v b")
+                        return False
+                # Ligne horizontale à droite
+                if x + 3 < w_g:
+                    if g[y][x] == g[y][x + 2] == g[y][x + 3]:
+                        print("Bonbon", x, y, "echange d ligne h d")
+                        return False
+                # 2) Bonbon échangé vers la gauche
+                # Ligne verticale en haut
+                if y - 2 >= 0:
+                    if g[y - 2][x] == g[y - 1][x] == g[y][x + 1]:
+                        print("Bonbon", x, y, "echange g ligne v h")
+                        return False
+                # Ligne verticale milieu
+                if y - 1 >= 0 and y + 1 < h_g:
+                    if g[y - 1][x] == g[y][x + 1] == g[y + 1][x]:
+                        print("Bonbon", x, y, "echange g ligne v m")
+                        return False
+                # Ligne verticale en bas
+                if y + 2 < h_g:
+                    if g[y][x + 1] == g[y + 1][x] == g[y + 2][x]:
+                        print("Bonbon", x, y, "echange g ligne v b")
+                        return False
+                # Ligne horizontale à gauche
+                if x - 2 < w_g:
+                    if g[y][x + 1] == g[y][x - 1] == g[y][x - 2]:
+                        print("Bonbon", x, y, "echange g ligne h g")
+                        return False
+            # Échange vers le bas
+            if y + 1 < h_g:
+                # 1) Bonbon échangé vers le bas
+                # Ligne horizontale à droite
+                if x + 2 < w_g:
+                    if g[y][x] == g[y - 1][x + 1] == g[y - 1][x + 2]:
+                        print("Bonbon", x, y, "echange b ligne h d")
+                        return False
+                # Ligne horizontale milieu
+                if x - 1 >= 0 and x + 1 < w_g:
+                    if g[y - 1][x - 1] == g[y][x] == g[y - 1][x + 1]:
+                        print("Bonbon", x, y, "echange b ligne h m")
+                        return False
+                # Ligne horizontale à gauche
+                if x - 2 >= 0:
+                    if g[y - 1][x - 2] == g[y - 1][x - 1] == g[y][x]:
+                        print("Bonbon", x, y, "echange b ligne h b")
+                        return False
+                # Ligne verticale en bas
+                if y - 3 < h_g:
+                    if g[y][x] == g[y - 2][x] == g[y - 3][x]:
+                        print("Bonbon", x, y, "echange b ligne v b")
+                        return False
+                # 2) Bonbon échangé vers le haut
+                # Ligne horizontale à droite
+                if x + 2 < w_g:
+                    if g[y + 1][x] == g[y][x + 1] == g[y + 1][x + 2]:
+                        print("Bonbon", x, y, "echange h ligne h d")
+                        return False
+                # Ligne horizontale milieu
+                if x - 1 >= 0 and x + 1 < w_g:
+                    if g[y][x - 1] == g[y + 1][x] == g[y][x + 1]:
+                        print("Bonbon", x, y, "echange h ligne h m")
+                        return False
+                # Ligne horizontale à gauche
+                if x - 2 >= 0:
+                    if g[y][x - 2] == g[y][x - 1] == g[y + 1][x]:
+                        print("Bonbon", x, y, "echange h ligne h g")
+                        return False
+                # Ligne verticale en haut
+                if y - 2 >= 0:
+                    if g[y - 2][x] == g[y - 1][x] == g[y][x + 1]:
+                        print("Bonbon", x, y, "echange h ligne v h")
+                        return False
+    print("Jeu bloqué")
+    return True
+
+
 if __name__ == "__main__":
     g = charger_grille("data/exemple_grille.csv")
     afficher_grille(g)

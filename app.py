@@ -1,6 +1,11 @@
 import tkinter as tk
 from tkinter import Tk, ttk
-from fonctions import generer_grille, echanger_deux_bonbons, supprimer_bonbons_en_ligne
+from fonctions import (
+    generer_grille,
+    echanger_deux_bonbons,
+    supprimer_bonbons_en_ligne,
+    jeu_est_bloque,
+)
 
 COLORS = ["#f15000", "#026edb", "#00d000", "#E3E300", "#be00ee", "#ee9700"]
 COLORS_OUTLINE = ["#5d1f00", "#002f60", "#005d00", "#5B5B00", "#450056", "#573700"]
@@ -35,6 +40,7 @@ class Grille:
                 else:
                     self.bonbon_choisi = (x, y)
                 self.grille = supprimer_bonbons_en_ligne(self.grille)
+                jeu_est_bloque(self.grille)
                 canvas.destroy()
                 self.creer_canvas()
 
@@ -42,6 +48,9 @@ class Grille:
 
         for y in range(len(g)):
             for x in range(len(g[y])):
+                if g[y][x] == -1:
+                    continue
+
                 x_debut = P + (SIZE + P) * x
                 x_fin = (SIZE + P) * (x + 1)
                 y_debut = P + (SIZE + P) * y
