@@ -39,7 +39,7 @@ Remplir les emplacements vides par de nouveux bonbons aléatoires
 | Fonction                   | Chargé de la réalisation | Terminé |
 | -------------------------- | ------------------------ | ------- |
 | charger_grille             | Tout le monde            | Non     |
-| jeu_est_bloque             | Matthieu                 | Non     |
+| jeu_est_bloque             | Matthieu                 | Oui     |
 | afficher_grille            | Arthur                   | Non     |
 | demander_mouvement         | Théo                     | Non     |
 | echanger_deux_bonbons      | Matthieu                 | Oui     |
