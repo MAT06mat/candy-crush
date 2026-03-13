@@ -10,7 +10,8 @@ from fonctions import (
 
 COLORS = ["#f15000", "#026edb", "#00d000", "#E3E300", "#be00ee", "#ee9700"]
 COLORS_OUTLINE = ["#5d1f00", "#002f60", "#005d00", "#5B5B00", "#450056", "#573700"]
-P = 8
+P = 50
+GAP = 8
 SIZE = 50
 
 COLOR_PATH = ["red", "blue", "green", "yellow", "purple", "orange"]
@@ -25,14 +26,33 @@ class Grille:
         self.canvas = None
         self.assets_cache = {}
 
-        self.bg_image = None
+        # Chargement des images (d'abord le fond puis les bonbons et la grille)
         self.charger_background(f"assets/backgrounds/{background}.png")
-        self.charger_tuiles_grille()
+        self.charger_assets()
 
-        self.creer_canvas()
+        # Initialise et affiche la grille
+        self.initialiser_canvas()
+        self.actualiser_bonbons()
+
+    def charger_assets(self):
+        """Chargement des différentes images"""
+
+        # Chargement des bonbons
+        for color in COLOR_PATH:
+            path = f"assets/candies/{color}.png"
+            self.get_asset(color, path, SIZE)
+
+        # Chargement des tuiles pour la grille
+        for tuile in TUILES_PATH:
+            self.get_asset(tuile, f"assets/grid/{tuile}.png", size=SIZE + GAP)
+
+        # Chargement du selecteur de bonbon
+        self.get_asset("selected", "assets/selected.png", SIZE + 2 * GAP)
 
     def charger_background(self, path):
         """Charge et redimensionne le fond aux dimensions de la grille"""
+
+        self.bg_image = None
         try:
             # Load the original large image
             raw_bg = PhotoImage(file=path)
@@ -41,8 +61,8 @@ class Grille:
 
             # Target canvas dimensions
             w_g, h_g = len(self.grille[0]), len(self.grille)
-            target_w = P + (P + SIZE) * w_g
-            target_h = P + (P + SIZE) * h_g
+            target_w = 2 * P - GAP + (GAP + SIZE) * w_g
+            target_h = 2 * P - GAP + (GAP + SIZE) * h_g
 
             # Calculate the subsample factor
             # We use integer division to find how many times the target fits in the original
@@ -61,36 +81,36 @@ class Grille:
         except Exception as e:
             print(f"Erreur chargement background: {e}")
 
-    def get_resized_asset(self, index, file=None, size=SIZE):
-        """Returns the resized image from cache, or creates it if missing"""
+    def get_asset(self, index, file=None, size=SIZE):
+        """Retourne l'image redimensionné, ou créé l'image pour la mettre dans le cache si elle n'y est pas déjà"""
+
         if index not in self.assets_cache and file:
             raw_image = PhotoImage(file=file)
 
-            # Perform the heavy resizing logic only once per color
+            # Cette opération est très lourde, mais n'est fait qu'une seule fois au démarrage de l'app
             orig_size = raw_image.width()
             common = math.gcd(orig_size, size)
             zoom_val = size // common
             subsample_val = orig_size // common
 
+            # Rajoute l'image au cache
             self.assets_cache[index] = raw_image.zoom(zoom_val).subsample(subsample_val)
 
         return self.assets_cache[index]
 
-    def charger_tuiles_grille(self):
-        for tuile in TUILES_PATH:
-            self.get_resized_asset(tuile, f"assets/grid/{tuile}.png", size=SIZE + P)
+    def initialiser_canvas(self):
+        """Créé le canvas et dessiner le fond et la grille"""
 
-    def creer_canvas(self):
-        g = self.grille
-        w_g, h_g = len(g[0]), len(g)
-        w_canvas = P + (P + SIZE) * w_g
-        h_canvas = P + (P + SIZE) * h_g
-        if self.canvas:
-            self.canvas.delete("all")
-        else:
-            self.canvas = tk.Canvas(self.conteneur, width=w_canvas, height=h_canvas)
-            self.canvas.pack()
+        # Calcule la largeur et la hauteur du canvas
+        w_g, h_g = len(self.grille[0]), len(self.grille)
+        w_canvas = 2 * P - GAP + (GAP + SIZE) * w_g - 4
+        h_canvas = 2 * P - GAP + (GAP + SIZE) * h_g - 4
 
+        # Créé le canvas
+        self.canvas = tk.Canvas(self.conteneur, width=w_canvas, height=h_canvas)
+        self.canvas.pack()
+
+        # Dessine le background
         if self.bg_image:
             offset_x = (self.bg_image.width() - w_canvas) // 2
             offset_y = (self.bg_image.height() - h_canvas) // 2
@@ -98,18 +118,11 @@ class Grille:
                 -offset_x, -offset_y, image=self.bg_image, anchor="nw"
             )
 
-        if self.bonbon_choisi:
-            selection_image = self.get_resized_asset(
-                "selected", "assets/selected.png", SIZE + 2 * P
-            )
-            x_pos = (SIZE + P) * self.bonbon_choisi[0]
-            y_pos = (SIZE + P) * self.bonbon_choisi[1]
-            self.canvas.create_image(x_pos, y_pos, image=selection_image, anchor="nw")
-
+        # Dessine la grille
         for y in range(len(g)):
             for x in range(len(g[y])):
-                x_pos = P + (SIZE + P) * x
-                y_pos = P + (SIZE + P) * y
+                x_pos = P + (SIZE + GAP) * x
+                y_pos = P + (SIZE + GAP) * y
 
                 tuile_type = ""
                 if y == 0:
@@ -123,19 +136,40 @@ class Grille:
                 if tuile_type == "":
                     tuile_type = "C"
 
-                tuile = self.get_resized_asset(tuile_type)
+                tuile = self.get_asset(tuile_type)
                 self.canvas.create_image(
-                    x_pos - P / 2, y_pos - P / 2, image=tuile, anchor="nw"
+                    x_pos - GAP / 2, y_pos - GAP / 2, image=tuile, anchor="nw"
                 )
 
+    def actualiser_bonbons(self):
+        """Dessine ou actualise les bonbons"""
+
+        # Supprime tous les éléments qui ont le tag dynamic
+        self.canvas.delete("dynamic")
+
+        g = self.grille
+
+        # Affiche le selecteur de bonbon autour du bonbon choisi
+        if self.bonbon_choisi:
+            x_sel = P - GAP + (SIZE + GAP) * self.bonbon_choisi[0]
+            y_sel = P - GAP + (SIZE + GAP) * self.bonbon_choisi[1]
+            sel_img = self.get_asset("selected")
+            self.canvas.create_image(
+                x_sel, y_sel, image=sel_img, anchor="nw", tags="dynamic"
+            )
+
+        # Affiche les bonbons dans la grille
+        for y in range(len(g)):
+            for x in range(len(g[y])):
                 if g[y][x] == -1:
                     continue
 
-                img_path = f"assets/candies/{COLOR_PATH[g[y][x]]}.png"
-                bonbon_image = self.get_resized_asset(g[y][x], img_path)
+                x_pos = P + (SIZE + GAP) * x
+                y_pos = P + (SIZE + GAP) * y
 
+                bonbon_img = self.get_asset(COLOR_PATH[g[y][x]])
                 bonbon = self.canvas.create_image(
-                    x_pos, y_pos, image=bonbon_image, anchor="nw"
+                    x_pos, y_pos, image=bonbon_img, anchor="nw", tags="dynamic"
                 )
 
                 self.canvas.tag_bind(bonbon, "<Button-1>", self.create_callback(x, y))
@@ -150,8 +184,9 @@ class Grille:
             else:
                 self.bonbon_choisi = (x, y)
             self.grille = supprimer_bonbons_en_ligne(self.grille)
-            jeu_est_bloque(self.grille)
-            self.creer_canvas()
+            if jeu_est_bloque(self.grille):
+                print("Le jeu est bloqué !")
+            self.actualiser_bonbons()
 
         return callback
 
@@ -160,7 +195,7 @@ root = Tk()
 root.title("Candy Crush")
 frame = ttk.Frame(root, padding=10)
 # g = charger_grille("data/exemple_grille.csv")
-g = generer_grille(10, 16, 3)
+g = generer_grille(6, 7, 6)
 frame2 = ttk.Frame(frame, padding=10)
 Grille(frame2, g, background="forest")
 frame2.pack()
