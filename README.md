@@ -44,11 +44,11 @@ Remplir les emplacements vides par de nouveux bonbons aléatoires
 | demander_mouvement         | Théo                     | Non     |
 | echanger_deux_bonbons      | Matthieu                 | Oui     |
 | grille_est_stable          | Théo                     | Non     |
-| calculer_nouvelle_grille   | Arthur                   | Non     |
+| calculer_nouvelle_grille   | Arthur                   | Oui     |
 | dupliquer_grille           | Théo                     | Non     |
 | supprimer_bonbons_en_ligne | Matthieu                 | Oui     |
 | appliquer_gravite          | Théo                     | Non     |
-| ajouter_bonbons_aleatoires | Arthur                   | Non     |
+| ajouter_bonbons_aleatoires | Arthur                   | Oui     |
 
 ## Sous tâches
 
