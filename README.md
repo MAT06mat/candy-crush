@@ -40,7 +40,7 @@ Remplir les emplacements vides par de nouveux bonbons aléatoires
 | -------------------------- | ------------------------ | ------- |
 | charger_grille             | Tout le monde            | Non     |
 | jeu_est_bloque             | Matthieu                 | Oui     |
-| afficher_grille            | Arthur                   | Non     |
+| afficher_grille            | Arthur                   | Oui     |
 | demander_mouvement         | Théo                     | Non     |
 | echanger_deux_bonbons      | Matthieu                 | Oui     |
 | grille_est_stable          | Théo                     | Non     |
