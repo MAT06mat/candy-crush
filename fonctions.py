@@ -1,4 +1,5 @@
 from random import choice
+from random import randint
 from copy import deepcopy
 
 
@@ -98,7 +99,6 @@ def afficher_grille(grille):
 
     for ligne in grille:
         print(*ligne)
-        
 
 
 def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
@@ -224,7 +224,10 @@ def jeu_est_bloque(grille):
                         return False
     return True
 
-def calculer_nouvelle_grille(grille: list[list[int]]) -> list[list[int]]:
+
+def calculer_nouvelle_grille(
+    grille: list[list[int]], nb_type_bonbons
+) -> list[list[int]]:
     """
     Applique les transformations sur la grille et renvoie la nouvelle
 
@@ -240,26 +243,31 @@ def calculer_nouvelle_grille(grille: list[list[int]]) -> list[list[int]]:
         ancienne_grille = dupliquer_grille(grille)
         supprimer_bonbons_en_ligne(grille)
         appliquer_gravite(grille)
-        ajouter_bonbons_aleatoires(grille)
+        ajouter_bonbons_aleatoires(grille, nb_type_bonbons)
         grille_stable = grille_est_stable(ancienne_grille, grille)
     return grille
- 
- 
- def ajouter_bonbons_aleatoires(grille: list[list[int]]):
+
+
+def ajouter_bonbons_aleatoires(grille: list[list[int]], nb_type_bonbons):
     """
     Modifie la grille donnée pour ajouter des bonbons aléatoires aux emplacements vides
 
     Params:
         - grille (liste 2D) : la grille 2D de bonbons
+        - nb_type_bonbons (int) : nombre de types de bonbons possibles
 
     Return:
         None.
 
-    """   
-    
-    
-    
-def grille_est_stable(grille, nouvelle_grille) :
+    """
+    for i in range(len(grille[0])):
+        j = 0
+        while j < len(grille) and grille[j][i] == -1:
+            grille[j][i] = randint(0, nb_type_bonbons - 1)
+            j += 1
+
+
+def grille_est_stable(grille, nouvelle_grille):
     """
     Vérifie qu'il n'y a pas plus de mouvements possible après le remplissage de la grille par de nouveaux bonbons en comparant les deux dernières grilles
 
@@ -271,7 +279,9 @@ def grille_est_stable(grille, nouvelle_grille) :
         est_stable (boolean) : True si elles sont identiques et False sinon
 
     """
-    
+    return True
+
+
 def appliquer_gravite(grille: list[list[int]]):
     """
     Modifie la grille donnée pour faire descendre tout les bonbons avec des emplacements vide en dessous comme si l'on appliquait la gravité à la grille

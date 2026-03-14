@@ -3,6 +3,9 @@ from fonctions import charger_grille
 from fonctions import echanger_deux_bonbons
 from fonctions import supprimer_bonbons_en_ligne
 from fonctions import jeu_est_bloque
+from fonctions import calculer_nouvelle_grille
+from fonctions import grille_est_stable
+from fonctions import ajouter_bonbons_aleatoires
 
 
 class ChargerGrille(TestCase):
@@ -100,6 +103,46 @@ class JeuBloque(TestCase):
     def test_defaut_5(self):
         grille = [[1, 2, 0], [2, 0, 1], [0, 1, 2]]
         self.assertTrue(jeu_est_bloque(grille))
+
+
+class CalculNouvelleGrille(TestCase):
+    def test_grille_stable(self):
+        grille = [[0, 1, 2], [1, 2, 3], [2, 3, 4]]
+        nouvelle_grille = calculer_nouvelle_grille(grille, 1)
+        self.assertTrue(grille_est_stable(grille, nouvelle_grille))
+
+    def test_grille_instable(self):
+        grille = [[1, 2, 3], [2, 3, 4], [0, 0, 0]]
+        ng = calculer_nouvelle_grille(grille, 1)
+        self.assertTrue(ng[2][0] == 2 and ng[2][1] == 3 and ng[2][2] == 4)
+
+
+class AjouterBonbonsAleatoire(TestCase):
+    def test_grille_vide(self):
+        grille = [[-1, -1, -1], [-1, -1, -1], [-1, -1, -1]]
+        grille_attendue = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        ajouter_bonbons_aleatoires(grille, 1)
+        self.assertTrue(grille_est_stable(grille, grille_attendue))
+
+    def test_grille_complete(self):
+        grille = [[1, 2, 3], [2, 3, 4], [0, 0, 0]]
+        grille_attendue = [[1, 2, 3], [2, 3, 4], [0, 0, 0]]
+        ajouter_bonbons_aleatoires(grille, 1)
+        self.assertTrue(grille_est_stable(grille, grille_attendue))
+
+    def test_grille_partielle(self):
+        grille = [[1, -1, -1], [2, 3, -1], [0, 0, 0]]
+        ajouter_bonbons_aleatoires(grille, 4)
+        erreur = False
+        i = 0
+        while i < len(grille) and not erreur:
+            j = 0
+            while j < len(grille[0]) and not erreur:
+                if grille[i][j] < 0 or grille[i][j] > 3:
+                    erreur = True
+                j += 1
+            i += 1
+        self.assertFalse(erreur)
 
 
 if __name__ == "__main__":
