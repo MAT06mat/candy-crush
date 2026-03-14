@@ -10,12 +10,30 @@ from fonctions import (
 
 COLORS = ["#f15000", "#026edb", "#00d000", "#E3E300", "#be00ee", "#ee9700"]
 COLORS_OUTLINE = ["#5d1f00", "#002f60", "#005d00", "#5B5B00", "#450056", "#573700"]
-P = 50
-GAP = 8
-SIZE = 50
+PX = 200
+PY = 120
+GAP = 4
+SIZE = 72
 
 COLOR_PATH = ["red", "blue", "green", "yellow", "purple", "orange"]
 TUILES_PATH = ["TL", "T", "TR", "L", "C", "R", "BL", "B", "BR"]
+
+
+class CandyCrush:
+    def __init__(self, x=7, y=6, nb_bonbons=6, background="forest"):
+        self.root = Tk()
+        self.root.title("Candy Crush")
+        self.frame = ttk.Frame(self.root, padding=10)
+
+        g = generer_grille(y, x, nb_bonbons)
+        Grille(self.frame, g, background)
+
+        ttk.Button(self.frame, text="Click !!!!").pack()
+
+        self.frame.pack()
+
+    def main(self):
+        self.root.mainloop()
 
 
 class Grille:
@@ -39,8 +57,10 @@ class Grille:
 
         # Chargement des bonbons
         for color in COLOR_PATH:
-            path = f"assets/candies/{color}.png"
-            self.get_asset(color, path, SIZE)
+            for bonus in ["", "-h", "-v", "-p"]:
+                path = f"assets/candies/{color + bonus}.png"
+                self.get_asset(color + bonus, path)
+        self.get_asset("rainbow", "assets/candies/rainbow.png")
 
         # Chargement des tuiles pour la grille
         for tuile in TUILES_PATH:
@@ -61,8 +81,8 @@ class Grille:
 
             # Target canvas dimensions
             w_g, h_g = len(self.grille[0]), len(self.grille)
-            target_w = 2 * P - GAP + (GAP + SIZE) * w_g
-            target_h = 2 * P - GAP + (GAP + SIZE) * h_g
+            target_w = 2 * PX - GAP + (GAP + SIZE) * w_g
+            target_h = 2 * PY - GAP + (GAP + SIZE) * h_g
 
             # Calculate the subsample factor
             # We use integer division to find how many times the target fits in the original
@@ -103,8 +123,8 @@ class Grille:
 
         # Calcule la largeur et la hauteur du canvas
         w_g, h_g = len(self.grille[0]), len(self.grille)
-        w_canvas = 2 * P - GAP + (GAP + SIZE) * w_g - 4
-        h_canvas = 2 * P - GAP + (GAP + SIZE) * h_g - 4
+        w_canvas = 2 * PX - GAP + (GAP + SIZE) * w_g - 4
+        h_canvas = 2 * PY - GAP + (GAP + SIZE) * h_g - 4
 
         # Créé le canvas
         self.canvas = tk.Canvas(self.conteneur, width=w_canvas, height=h_canvas)
@@ -119,19 +139,19 @@ class Grille:
             )
 
         # Dessine la grille
-        for y in range(len(g)):
-            for x in range(len(g[y])):
-                x_pos = P + (SIZE + GAP) * x
-                y_pos = P + (SIZE + GAP) * y
+        for y in range(len(self.grille)):
+            for x in range(len(self.grille[y])):
+                x_pos = PX + (SIZE + GAP) * x
+                y_pos = PY + (SIZE + GAP) * y
 
                 tuile_type = ""
                 if y == 0:
                     tuile_type += "T"
-                elif y == len(g) - 1:
+                elif y == len(self.grille) - 1:
                     tuile_type += "B"
                 if x == 0:
                     tuile_type += "L"
-                elif x == len(g[0]) - 1:
+                elif x == len(self.grille[0]) - 1:
                     tuile_type += "R"
                 if tuile_type == "":
                     tuile_type = "C"
@@ -151,8 +171,8 @@ class Grille:
 
         # Affiche le selecteur de bonbon autour du bonbon choisi
         if self.bonbon_choisi:
-            x_sel = P - GAP + (SIZE + GAP) * self.bonbon_choisi[0]
-            y_sel = P - GAP + (SIZE + GAP) * self.bonbon_choisi[1]
+            x_sel = PX - GAP + (SIZE + GAP) * self.bonbon_choisi[0]
+            y_sel = PY - GAP + (SIZE + GAP) * self.bonbon_choisi[1]
             sel_img = self.get_asset("selected")
             self.canvas.create_image(
                 x_sel, y_sel, image=sel_img, anchor="nw", tags="dynamic"
@@ -164,8 +184,8 @@ class Grille:
                 if g[y][x] == -1:
                     continue
 
-                x_pos = P + (SIZE + GAP) * x
-                y_pos = P + (SIZE + GAP) * y
+                x_pos = PX + (SIZE + GAP) * x
+                y_pos = PY + (SIZE + GAP) * y
 
                 bonbon_img = self.get_asset(COLOR_PATH[g[y][x]])
                 bonbon = self.canvas.create_image(
@@ -191,14 +211,6 @@ class Grille:
         return callback
 
 
-root = Tk()
-root.title("Candy Crush")
-frame = ttk.Frame(root, padding=10)
-# g = charger_grille("data/exemple_grille.csv")
-g = generer_grille(6, 7, 6)
-frame2 = ttk.Frame(frame, padding=10)
-Grille(frame2, g, background="forest")
-frame2.pack()
-ttk.Button(frame, text="Click me !", command=lambda: print("Button click !")).pack()
-frame.pack()
-root.mainloop()
+if __name__ == "__main__":
+    jeu = CandyCrush(background="forest")
+    jeu.main()
