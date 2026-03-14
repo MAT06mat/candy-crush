@@ -60,10 +60,10 @@ def charger_grille(fichier: str) -> list[list[int]]:
     Récupère la grille dans le fichier csv et la retourne sous forme de liste 2D d'entiers
 
     Params:
-        - fichier (str) : le nom du fichier à charger
+        fichier (str) : le nom du fichier à charger
 
-    Return:
-        - grille (liste 2D) : liste 2D d'entiers
+    Returns:
+        grille (liste 2D) : liste 2D d'entiers
 
     """
 ```
@@ -75,11 +75,11 @@ def jeu_est_bloque(grille):
     """
     Analyse la grille est renvoie True si grille bloquée, False sinon (non bloquée)
 
-    Params :
-        - grille (liste 2D) : grille du jeu à analyser
+    Params:
+        grille (liste 2D) : grille du jeu à analyser
 
-    Return :
-        - bloquée (bool) : True si grille bloquée, False grille non bloquée
+    Returns:
+        bloque (bool) : True si grille bloquée, False grille non bloquée
     """
 ```
 
@@ -90,11 +90,11 @@ def afficher_grille(grille):
     """
     Réalise l'affichage dans le terminal de la liste 2D mis en paramètre.
 
-    Params :
-        - grille (liste 2D) : liste 2D d'entiers
+    Params:
+        grille (liste 2D) : liste 2D d'entiers
 
-    Returns :
-        None.
+    Returns:
+
     """
 ```
 
@@ -106,11 +106,10 @@ def demander_mouvement():
     Demande à l'utilisateur le mouvement qu'il veut réaliser pour bouger deux bonbons
 
     Params:
-        None.
 
-    Return:
-        - pos_i (int, int) : liste de deux entiers pour les coordonnées initiales du bonbon à déplacer
-        - pos_f (int, int) : liste de deux entiers pour les coordonnées finales du bonbon à déplacer
+    Returns:
+        pos_i (int, int) : liste de deux entiers pour les coordonnées initiales du bonbon à déplacer
+        pos_f (int, int) : liste de deux entiers pour les coordonnées finales du bonbon à déplacer
 
     """
 ```
@@ -122,12 +121,11 @@ def echanger_deux_bonbons(grille, pos_i, pos_f):
     """
     Modifie la grille pour échanger les deux bonbons sélectionnés par l'utilisateur
 
-    Params :
-        - pos_i (int, int) : position en x et y du bonbon à échanger.
-        - pos_f (int, int) : position en x et y d'arrivée du bonbon.
+    Params:
+        pos_i (int, int) : position en x et y du bonbon à échanger.
+        pos_f (int, int) : position en x et y d'arrivée du bonbon.
 
-    Return :
-        None.
+    Returns:
 
     """
 ```
@@ -139,11 +137,11 @@ def grille_est_stable(grille, nouvelle_grille) :
     """
     Vérifie qu'il n'y a pas plus de mouvements possible après le remplissage de la grille par de nouveaux bonbons en comparant les deux dernières grilles
 
-    Params :
+    Params:
         grille (liste 2D) : liste 2D d'entiers représentant la grille actuelle
         nouvelle_grille (liste 2D) : liste 2D d'entiers représentant la nouvelle grille
 
-    Return :
+    Returns:
         est_stable (boolean) : True si elles sont identiques et False sinon
 
     """
@@ -157,10 +155,10 @@ def calculer_nouvelle_grille(grille: list[list[int]]) -> list[list[int]]:
     Applique les transformations sur la grille et renvoie la nouvelle
 
     Params:
-        - grille (liste 2D) : la grille d'origine
+        grille (liste 2D) : la grille d'origine
 
-    Return:
-        - nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
+    Returns:
+        nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
 
     """
 ```
@@ -173,10 +171,10 @@ def dupliquer_grille(grille: list[list[int]]) -> list[list[int]]:
     Créé une nouvelle grille identique à la première
 
     Params:
-        - grille (liste 2D) : la grille d'origine
+        grille (liste 2D) : la grille d'origine
 
-    Return:
-        - nouvelle_grille (liste 2D) : copie de la grille d'origine
+    Returns:
+        nouvelle_grille (liste 2D) : copie de la grille d'origine
 
     """
 ```
@@ -189,10 +187,10 @@ def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
     Duplique la grille et supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés. Supprime les bonbons par rapport à la grille de référence qui à été dupliqué. Retourne la nouvelle grille sans les bonbons formant des lignes
 
     Params:
-        - grille (liste 2D) : la grille d'origine
+        grille (liste 2D) : la grille d'origine
 
-    Return:
-        - nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
+    Returns:
+        nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
 
     """
 ```
@@ -205,10 +203,9 @@ def appliquer_gravite(grille: list[list[int]]):
     Modifie la grille donnée pour faire descendre tout les bonbons avec des emplacements vide en dessous comme si l'on appliquait la gravité à la grille
 
     Params:
-        - grille (liste 2D) : la grille 2D de bonbons
+        grille (liste 2D) : la grille 2D de bonbons
 
-    Return:
-        None.
+    Returns:
 
     """
 ```
@@ -221,10 +218,9 @@ def ajouter_bonbons_aleatoires(grille: list[list[int]]):
     Modifie la grille donnée pour ajouter des bonbons aléatoires aux emplacements vides
 
     Params:
-        - grille (liste 2D) : la grille 2D de bonbons
+        grille (liste 2D) : la grille 2D de bonbons
 
-    Return:
-        None.
+    Returns:
 
     """
 ```
