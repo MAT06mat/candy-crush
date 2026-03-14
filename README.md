@@ -21,17 +21,17 @@ Tant que le jeu n'est pas bloqué et que l'utilisateur n'a pas atteint le nombre
     Demander à l'utilisateur un mouvement
     Jouer le coup
     Enlever 1 aux coups restants
-    Tant que la grille n'est pas stable :
-        Calculer la nouvelle grille
+    Calculer la nouvelle grille
 ```
 
 Décomposition du calcul de la nouvelle grille :
 
 ```txt
-Créer une nouvelle grille (duplication de la première)
-Supprimer tous les bonbons qui forment une ligne de 3 par rapport à la première grille
-Appliquer la gravité et descendre tous les bonbons volants
-Remplir les emplacements vides par de nouveux bonbons aléatoires
+Tant que la grille n'est pas stable :
+    Créer une nouvelle grille (duplication de la première)
+    Supprimer tous les bonbons qui forment une ligne de 3 par rapport à la  première grille
+    Appliquer la gravité et descendre tous les bonbons volants
+    Remplir les emplacements vides par de nouveux bonbons aléatoires
 ```
 
 ## Découpage fonctionnel (liste des fonctions)
@@ -150,12 +150,13 @@ def grille_est_stable(grille, nouvelle_grille) :
 ### calculer_nouvelle_grille
 
 ```py
-def calculer_nouvelle_grille(grille: list[list[int]]) -> list[list[int]]:
+def calculer_nouvelle_grille(grille: list[list[int]], nb_type_bonbons: int) -> list[list[int]]:
     """
-    Applique les transformations sur la grille et renvoie la nouvelle
+    Applique les transformations sur la grille, jusqu'à ce qu'elle soit stable et renvoie la nouvelle
 
     Params:
         grille (liste 2D) : la grille d'origine
+        nb_type_bonbons (int) : nombre de types de bonbons possibles
 
     Returns:
         nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
@@ -213,12 +214,13 @@ def appliquer_gravite(grille: list[list[int]]):
 ### ajouter_bonbons_aleatoires
 
 ```py
-def ajouter_bonbons_aleatoires(grille: list[list[int]]):
+def ajouter_bonbons_aleatoires(grille: list[list[int]], nb_type_bonbons):
     """
     Modifie la grille donnée pour ajouter des bonbons aléatoires aux emplacements vides
 
     Params:
         grille (liste 2D) : la grille 2D de bonbons
+        nb_type_bonbons (int) : nombre de types de bonbons possibles
 
     Returns:
 

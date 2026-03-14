@@ -113,6 +113,7 @@ def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
         nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
 
     """
+    # TODO
     # À remplacer par la fonction de copie de la grille
     nouvelle_grille = deepcopy(grille)
 
@@ -225,13 +226,14 @@ def jeu_est_bloque(grille):
 
 
 def calculer_nouvelle_grille(
-    grille: list[list[int]], nb_type_bonbons
+    grille: list[list[int]], nb_type_bonbons: int
 ) -> list[list[int]]:
     """
-    Applique les transformations sur la grille et renvoie la nouvelle
+    Applique les transformations sur la grille, jusqu'à ce qu'elle soit stable et renvoie la nouvelle
 
     Params:
         grille (liste 2D) : la grille d'origine
+        nb_type_bonbons (int) : nombre de types de bonbons possibles
 
     Returns:
         nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
@@ -239,11 +241,11 @@ def calculer_nouvelle_grille(
     """
     grille_stable = False
     while not grille_stable:
-        ancienne_grille = dupliquer_grille(grille)
-        supprimer_bonbons_en_ligne(grille)
-        appliquer_gravite(grille)
-        ajouter_bonbons_aleatoires(grille, nb_type_bonbons)
-        grille_stable = grille_est_stable(ancienne_grille, grille)
+        nouvelle_grille = supprimer_bonbons_en_ligne(grille)
+        appliquer_gravite(nouvelle_grille)
+        ajouter_bonbons_aleatoires(nouvelle_grille, nb_type_bonbons)
+        grille_stable = grille_est_stable(grille, nouvelle_grille)
+        grille = nouvelle_grille
     return grille
 
 
