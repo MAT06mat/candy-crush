@@ -119,16 +119,32 @@ def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
 
     for y in range(len(grille)):
         for x in range(len(grille[y])):
-            if x >= 2:
-                if grille[y][x - 2] == grille[y][x - 1] == grille[y][x]:
-                    nouvelle_grille[y][x - 2] = -1
-                    nouvelle_grille[y][x - 1] = -1
-                    nouvelle_grille[y][x] = -1
-            if y >= 2:
-                if grille[y - 2][x] == grille[y - 1][x] == grille[y][x]:
-                    nouvelle_grille[y - 2][x] = -1
-                    nouvelle_grille[y - 1][x] = -1
-                    nouvelle_grille[y][x] = -1
+            if x >= 2 and grille[y][x - 2] == grille[y][x - 1] == grille[y][x]:
+                nouvelle_grille[y][x - 2] = -1
+                nouvelle_grille[y][x - 1] = -1
+                nouvelle_grille[y][x] = -1
+                # TODO
+                # Si bonbon spécial, faire l'action
+                # TODO
+                # if x >= 4 and grille[y][x - 4] == grille[y][x - 3] == grille[y][x]:
+                #     # Ajout du bonbon arc-en-ciel
+                #     pass
+                # elif x >= 3 and grille[y][x - 3] == grille[y][x]:
+                #     # Ajout du bonbon -h
+                #     pass
+            if y >= 2 and grille[y - 2][x] == grille[y - 1][x] == grille[y][x]:
+                nouvelle_grille[y - 2][x] = -1
+                nouvelle_grille[y - 1][x] = -1
+                nouvelle_grille[y][x] = -1
+                # TODO
+                # Si bonbon spécial, faire l'action
+                # TODO
+                # if y >= 4 and grille[y - 4][x] == grille[y - 3][x] == grille[y][x]:
+                #     # Ajout du bonbon arc-en-ciel
+                #     pass
+                # elif y >= 3 and grille[y - 3][x] == grille[y][x]:
+                #     # Ajout du bonbon -v
+                #     pass
     return nouvelle_grille
 
 
