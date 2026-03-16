@@ -1,11 +1,5 @@
 from unittest import TestCase, main
-from fonctions import charger_grille
-from fonctions import echanger_deux_bonbons
-from fonctions import supprimer_bonbons_en_ligne
-from fonctions import jeu_est_bloque
-from fonctions import calculer_nouvelle_grille
-from fonctions import grille_est_stable
-from fonctions import ajouter_bonbons_aleatoires
+from fonctions import *
 
 
 class ChargerGrille(TestCase):

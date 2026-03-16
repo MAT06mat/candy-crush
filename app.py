@@ -1,12 +1,8 @@
 import tkinter as tk
 from tkinter import Tk, ttk, PhotoImage
+from fonctions import *
+from time import sleep
 import math
-from fonctions import (
-    generer_grille,
-    echanger_deux_bonbons,
-    supprimer_bonbons_en_ligne,
-    jeu_est_bloque,
-)
 
 COLORS = ["#f15000", "#026edb", "#00d000", "#E3E300", "#be00ee", "#ee9700"]
 COLORS_OUTLINE = ["#5d1f00", "#002f60", "#005d00", "#5B5B00", "#450056", "#573700"]
@@ -24,9 +20,10 @@ class CandyCrush:
         self.root = Tk()
         self.root.title("Candy Crush")
         self.frame = ttk.Frame(self.root, padding=10)
+        self.frame.root = self.root
 
         g = generer_grille(y, x, nb_bonbons)
-        Grille(self.frame, g, background)
+        Grille(self.frame, g, nb_bonbons, background)
 
         ttk.Button(self.frame, text="Click !!!!").pack()
 
@@ -37,9 +34,10 @@ class CandyCrush:
 
 
 class Grille:
-    def __init__(self, conteneur, grille, background):
+    def __init__(self, conteneur, grille, nb_bonbons, background):
         self.conteneur = conteneur
         self.grille = grille
+        self.nb_bonbons = nb_bonbons
         self.bonbon_choisi = None  # None ou position sous forme (x, y)
         self.canvas = None
         self.assets_cache = {}
@@ -161,13 +159,16 @@ class Grille:
                     x_pos - GAP / 2, y_pos - GAP / 2, image=tuile, anchor="nw"
                 )
 
-    def actualiser_bonbons(self):
+    def actualiser_bonbons(self, grille=None):
         """Dessine ou actualise les bonbons"""
 
         # Supprime tous les éléments qui ont le tag dynamic
         self.canvas.delete("dynamic")
 
-        g = self.grille
+        if grille:
+            g = grille
+        else:
+            g = self.grille
 
         # Affiche le selecteur de bonbon autour du bonbon choisi
         if self.bonbon_choisi:
@@ -194,6 +195,25 @@ class Grille:
 
                 self.canvas.tag_bind(bonbon, "<Button-1>", self.create_callback(x, y))
 
+        self.conteneur.root.update()
+
+    def play_move(self):
+        self.actualiser_bonbons()
+        sleep(0.3)
+        stable = False
+        while not stable:
+            grille = supprimer_bonbons_en_ligne(self.grille)
+            self.actualiser_bonbons(grille)
+            sleep(0.3)
+            appliquer_gravite(grille)
+            self.actualiser_bonbons(grille)
+            sleep(0.3)
+            ajouter_bonbons_aleatoires(grille, self.nb_bonbons)
+            self.actualiser_bonbons(grille)
+            sleep(0.3)
+            stable = grille_est_stable(self.grille, grille)
+            self.grille = grille
+
     def create_callback(self, x, y):
         def callback(e):
             if self.bonbon_choisi == (x, y):
@@ -201,9 +221,10 @@ class Grille:
             elif self.bonbon_choisi:
                 echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
                 self.bonbon_choisi = None
+                self.play_move()
             else:
                 self.bonbon_choisi = (x, y)
-            self.grille = supprimer_bonbons_en_ligne(self.grille)
+
             if jeu_est_bloque(self.grille):
                 print("Le jeu est bloqué !")
             self.actualiser_bonbons()
