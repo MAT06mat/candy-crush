@@ -4,8 +4,6 @@ from fonctions import *
 from time import sleep
 import math
 
-COLORS = ["#f15000", "#026edb", "#00d000", "#E3E300", "#be00ee", "#ee9700"]
-COLORS_OUTLINE = ["#5d1f00", "#002f60", "#005d00", "#5B5B00", "#450056", "#573700"]
 PX = 200
 PY = 120
 GAP = 4
@@ -112,7 +110,12 @@ class Grille:
             subsample_val = orig_size // common
 
             # Rajoute l'image au cache
-            self.assets_cache[index] = raw_image.zoom(zoom_val).subsample(subsample_val)
+            if subsample_val == zoom_val == 1:
+                self.assets_cache[index] = raw_image
+            else:
+                self.assets_cache[index] = raw_image.zoom(zoom_val).subsample(
+                    subsample_val
+                )
 
         return self.assets_cache[index]
 
@@ -159,7 +162,7 @@ class Grille:
                     x_pos - GAP / 2, y_pos - GAP / 2, image=tuile, anchor="nw"
                 )
 
-    def actualiser_bonbons(self, grille=None):
+    def actualiser_bonbons(self, grille=None, bind_events=True):
         """Dessine ou actualise les bonbons"""
 
         # Supprime tous les éléments qui ont le tag dynamic
@@ -193,26 +196,29 @@ class Grille:
                     x_pos, y_pos, image=bonbon_img, anchor="nw", tags="dynamic"
                 )
 
-                self.canvas.tag_bind(bonbon, "<Button-1>", self.create_callback(x, y))
+                if bind_events:
+                    self.canvas.tag_bind(
+                        bonbon, "<Button-1>", self.create_callback(x, y)
+                    )
 
         self.conteneur.root.update()
 
     def play_move(self):
-        self.actualiser_bonbons()
-        sleep(0.3)
+        self.actualiser_bonbons(bind_events=False)
         stable = False
         while not stable:
-            grille = supprimer_bonbons_en_ligne(self.grille)
-            self.actualiser_bonbons(grille)
             sleep(0.3)
-            appliquer_gravite(grille)
-            self.actualiser_bonbons(grille)
+            nouvelle_grille = supprimer_bonbons_en_ligne(self.grille)
+            self.actualiser_bonbons(nouvelle_grille, bind_events=False)
             sleep(0.3)
-            ajouter_bonbons_aleatoires(grille, self.nb_bonbons)
-            self.actualiser_bonbons(grille)
+            appliquer_gravite(nouvelle_grille)
+            self.actualiser_bonbons(nouvelle_grille, bind_events=False)
             sleep(0.3)
-            stable = grille_est_stable(self.grille, grille)
-            self.grille = grille
+            ajouter_bonbons_aleatoires(nouvelle_grille, self.nb_bonbons)
+            self.actualiser_bonbons(nouvelle_grille, bind_events=False)
+            stable = grille_est_stable(self.grille, nouvelle_grille)
+            self.grille = nouvelle_grille
+        self.actualiser_bonbons()
 
     def create_callback(self, x, y):
         def callback(e):
@@ -233,5 +239,5 @@ class Grille:
 
 
 if __name__ == "__main__":
-    jeu = CandyCrush(background="forest")
+    jeu = CandyCrush(nb_bonbons=5, background="forest")
     jeu.main()
