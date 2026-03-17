@@ -9,7 +9,14 @@ PY = 120
 GAP = 4
 SIZE = 72
 
-COLOR_PATH = ["red", "blue", "green", "yellow", "purple", "orange"]
+COLOR_PATH = {
+    "0": "red",
+    "1": "blue",
+    "2": "green",
+    "3": "yellow",
+    "4": "purple",
+    "5": "orange",
+}
 TUILES_PATH = ["TL", "T", "TR", "L", "C", "R", "BL", "B", "BR"]
 
 
@@ -34,7 +41,7 @@ class CandyCrush:
 class Grille:
     def __init__(self, conteneur, grille, nb_bonbons, background):
         self.conteneur = conteneur
-        self.grille = grille
+        self.grille: liste_2d = grille
         self.nb_bonbons = nb_bonbons
         self.bonbon_choisi = None  # None ou position sous forme (x, y)
         self.canvas = None
@@ -52,7 +59,7 @@ class Grille:
         """Chargement des différentes images"""
 
         # Chargement des bonbons
-        for color in COLOR_PATH:
+        for _, color in COLOR_PATH.items():
             for bonus in ["", "-h", "-v", "-p"]:
                 path = f"assets/candies/{color + bonus}.png"
                 self.get_asset(color + bonus, path)
@@ -185,13 +192,19 @@ class Grille:
         # Affiche les bonbons dans la grille
         for y in range(len(g)):
             for x in range(len(g[y])):
-                if g[y][x] == -1:
+                if g[y][x] == "__":
                     continue
 
                 x_pos = PX + (SIZE + GAP) * x
                 y_pos = PY + (SIZE + GAP) * y
 
-                bonbon_img = self.get_asset(COLOR_PATH[g[y][x]])
+                if g[y][x][1] in "vhp":
+                    bonbon_img = self.get_asset(
+                        f"{COLOR_PATH[g[y][x][0]]}-{g[y][x][1]}"
+                    )
+                else:
+                    bonbon_img = self.get_asset(COLOR_PATH[g[y][x][0]])
+
                 bonbon = self.canvas.create_image(
                     x_pos, y_pos, image=bonbon_img, anchor="nw", tags="dynamic"
                 )

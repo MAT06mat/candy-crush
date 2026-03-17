@@ -10,6 +10,24 @@
 
 Pour le moment, nous allons partir sur le niveau 1, mais on va surement rajouter des petites améliorations dans le résultat final.
 
+Convention pour la grille :
+
+- Le premier caractère donne la couleur, "_" si case vide ou "r" si bonbon arc-en-ciel
+
+- Le deuxième caractère donne le bonnus, "_" si aucun
+
+- Les bonus sons : v - vertical / h - horizontal / p - explosif
+
+Exemple :
+
+- "0_" le bonbon est normal de la première couleur
+
+- "2v" le bonbon à un bonus vertical et est de la deuxème couleur
+
+- "r_" c'est un bonbon arc-en-ciel, par convention on met sa couleur à "r" et on ne lui met pas de bonus
+
+- "__" est une case vide
+
 ## Algorithme en pseudo code
 
 L'algorithme suivant sera ensuite placé dans la fonction `candy_crush`.
@@ -56,15 +74,15 @@ Remplir les emplacements vides par de nouveux bonbons aléatoires
 ### charger_grille
 
 ```py
-def charger_grille(fichier: str) -> list[list[int]]:
+def charger_grille(fichier: str) -> list[list[str]]:
     """
-    Récupère la grille dans le fichier csv et la retourne sous forme de liste 2D d'entiers
+    Récupère la grille dans le fichier csv et la retourne sous forme de liste 2D de str
 
     Params:
         fichier (str) : le nom du fichier à charger
 
     Returns:
-        grille (liste 2D) : liste 2D d'entiers
+        grille (liste 2D) : liste 2D de str
 
     """
 ```
@@ -92,7 +110,7 @@ def afficher_grille(grille):
     Réalise l'affichage dans le terminal de la liste 2D mis en paramètre.
 
     Params:
-        grille (liste 2D) : liste 2D d'entiers
+        grille (liste 2D) : liste 2D de str
 
     Returns:
 
@@ -123,6 +141,7 @@ def echanger_deux_bonbons(grille, pos_i, pos_f):
     Modifie la grille pour échanger les deux bonbons sélectionnés par l'utilisateur
 
     Params:
+        grille (liste 2D) : liste 2D de str
         pos_i (int, int) : position en x et y du bonbon à échanger.
         pos_f (int, int) : position en x et y d'arrivée du bonbon.
 
@@ -139,8 +158,8 @@ def grille_est_stable(grille, nouvelle_grille) :
     Vérifie qu'il n'y a pas plus de mouvements possible après le remplissage de la grille par de nouveaux bonbons en comparant les deux dernières grilles
 
     Params:
-        grille (liste 2D) : liste 2D d'entiers représentant la grille actuelle
-        nouvelle_grille (liste 2D) : liste 2D d'entiers représentant la nouvelle grille
+        grille (liste 2D) : liste 2D de str représentant la grille actuelle
+        nouvelle_grille (liste 2D) : liste 2D de str représentant la nouvelle grille
 
     Returns:
         est_stable (boolean) : True si elles sont identiques et False sinon

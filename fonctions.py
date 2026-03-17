@@ -2,7 +2,7 @@ from random import choice
 from random import randint
 
 
-liste_2d = list[list[int]]
+liste_2d = list[list[str]]
 
 
 def charger_grille(fichier: str) -> liste_2d:
@@ -22,7 +22,7 @@ def charger_grille(fichier: str) -> liste_2d:
         for ligne_str in f.read().split("\n"):
             ligne = []
             for numero in ligne_str.split():
-                ligne.append(int(numero))
+                ligne.append(numero + "_")
             if len(ligne):
                 grille.append(ligne)
     return grille
@@ -54,7 +54,9 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4) -> liste_2d:
     for y in range(m):
         ligne = []
         for x in range(n):
-            colors = list(range(nb_couleurs))
+            colors = []
+            for c in range(nb_couleurs):
+                colors.append(str(c))
 
             if x >= 2 and ligne[x - 1] in colors:
                 if ligne[x - 2] == ligne[x - 1]:
@@ -64,7 +66,7 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4) -> liste_2d:
                 if grille[y - 2][x] == grille[y - 1][x]:
                     colors.remove(grille[y - 1][x])
 
-            ligne.append(choice(colors))
+            ligne.append(choice(colors) + "_")
         grille.append(ligne)
     return grille
 
@@ -99,8 +101,8 @@ def afficher_grille(grille: liste_2d):
     """
 
     for ligne in grille:
-        for i in ligne:
-            print(i, end=" ")
+        for bonbon in ligne:
+            print(bonbon[0], end=" ")
         print()
 
 
@@ -117,22 +119,19 @@ def demander_mouvement():
     """
     pos_i = []
     pos_f = []
-    pos_i.append(
-        int(
-            input("Entrez la colonne du bonbon que vous souhaitez changer de place : ")
-        )  # on entre l'abscisse du bonbon qu'on souhaite échanger
-    )
-    pos_i.append(
-        int(
-            input("Entrez la ligne du bonbon que vous souhaitez changer de place : ")
-        )  # on entre l'ordonné du bonbon qu'on souhaite changer
-    )
-    pos_f.append(
-        int(input("Entrez la colonne du bonbon avec lequel vous voulez échanger : "))
-    )  # on entre l'abscisse de la case qu'on vise
-    pos_f.append(
-        int(input("Entrez la ligne du bonbon avec lequel vous voulez échanger : "))
-    )  # on entre l'ordonné de la case qu'on vise
+
+    # on entre l'abscisse du bonbon qu'on souhaite échanger
+    colone_i = input("Entrez la colonne du bonbon que vous voulez changer de place : ")
+    pos_i.append(int(colone_i))
+    # on entre l'ordonné du bonbon qu'on souhaite changer
+    ligne_i = input("Entrez la ligne du bonbon que vous voulez changer de place : ")
+    pos_i.append(int(ligne_i))
+    # on entre l'abscisse de la case qu'on vise
+    colone_f = input("Entrez la colonne du bonbon avec lequel vous voulez échanger : ")
+    pos_f.append(int(colone_f))
+    # on entre l'ordonné de la case qu'on vise
+    ligne_f = input("Entrez la ligne du bonbon avec lequel vous voulez échanger : ")
+    pos_f.append(int(ligne_f))
 
     return pos_i, pos_f
 
@@ -150,7 +149,7 @@ def grille_est_stable(grille: liste_2d, nouvelle_grille: liste_2d) -> bool:
 
     """
     est_stable = False
-    # On compare à la nouvelle grille créer : si elle est identique, c'est que la grille est
+    # On compare à la nouvelle grille créer : si elle est identique, c'est que la grille est stable
     if grille == nouvelle_grille:
         est_stable = True
     return est_stable
@@ -188,7 +187,7 @@ def appliquer_gravite(grille: liste_2d):
     """
     for j in range(len(grille[0])):
         for i in range(len(grille) - 1):
-            if grille[i + 1][j] == -1:
+            if grille[i + 1][j][0] == "_":
                 for k in range(i + 1, 0, -1):
                     echanger_deux_bonbons(grille, [j, k - 1], [j, k])
 
@@ -210,10 +209,10 @@ def supprimer_bonbons_en_ligne(grille: liste_2d) -> liste_2d:
 
     for y in range(len(grille)):
         for x in range(len(grille[y])):
-            if x >= 2 and grille[y][x - 2] == grille[y][x - 1] == grille[y][x]:
-                nouvelle_grille[y][x - 2] = -1
-                nouvelle_grille[y][x - 1] = -1
-                nouvelle_grille[y][x] = -1
+            if x >= 2 and grille[y][x - 2][0] == grille[y][x - 1][0] == grille[y][x][0]:
+                nouvelle_grille[y][x - 2] = "__"
+                nouvelle_grille[y][x - 1] = "__"
+                nouvelle_grille[y][x] = "__"
                 # TODO
                 # Si bonbon spécial, faire l'action
                 # TODO
@@ -223,10 +222,10 @@ def supprimer_bonbons_en_ligne(grille: liste_2d) -> liste_2d:
                 # elif x >= 3 and grille[y][x - 3] == grille[y][x]:
                 #     # Ajout du bonbon -h
                 #     pass
-            if y >= 2 and grille[y - 2][x] == grille[y - 1][x] == grille[y][x]:
-                nouvelle_grille[y - 2][x] = -1
-                nouvelle_grille[y - 1][x] = -1
-                nouvelle_grille[y][x] = -1
+            if y >= 2 and grille[y - 2][x][0] == grille[y - 1][x][0] == grille[y][x][0]:
+                nouvelle_grille[y - 2][x] = "__"
+                nouvelle_grille[y - 1][x] = "__"
+                nouvelle_grille[y][x] = "__"
                 # TODO
                 # Si bonbon spécial, faire l'action
                 # TODO
@@ -262,72 +261,72 @@ def jeu_est_bloque(grille: liste_2d) -> bool:
                 # 1) Bonbon échangé vers la droite
                 # Ligne verticale en haut
                 if y - 2 >= 0:
-                    if g[y - 2][x + 1] == g[y - 1][x + 1] == g[y][x]:
+                    if g[y - 2][x + 1][0] == g[y - 1][x + 1][0] == g[y][x][0]:
                         return False
                 # Ligne verticale milieu
                 if y - 1 >= 0 and y + 1 < h_g:
-                    if g[y - 1][x + 1] == g[y][x] == g[y + 1][x + 1]:
+                    if g[y - 1][x + 1][0] == g[y][x][0] == g[y + 1][x + 1][0]:
                         return False
                 # Ligne verticale en bas
                 if y + 2 < h_g:
-                    if g[y][x] == g[y + 1][x + 1] == g[y + 2][x + 1]:
+                    if g[y][x][0] == g[y + 1][x + 1][0] == g[y + 2][x + 1][0]:
                         return False
                 # Ligne horizontale à droite
                 if x + 3 < w_g:
-                    if g[y][x] == g[y][x + 2] == g[y][x + 3]:
+                    if g[y][x][0] == g[y][x + 2][0] == g[y][x + 3][0]:
                         return False
                 # 2) Bonbon échangé vers la gauche
                 # Ligne verticale en haut
                 if y - 2 >= 0:
-                    if g[y - 2][x] == g[y - 1][x] == g[y][x + 1]:
+                    if g[y - 2][x][0] == g[y - 1][x][0] == g[y][x + 1][0]:
                         return False
                 # Ligne verticale milieu
                 if y - 1 >= 0 and y + 1 < h_g:
-                    if g[y - 1][x] == g[y][x + 1] == g[y + 1][x]:
+                    if g[y - 1][x][0] == g[y][x + 1][0] == g[y + 1][x][0]:
                         return False
                 # Ligne verticale en bas
                 if y + 2 < h_g:
-                    if g[y][x + 1] == g[y + 1][x] == g[y + 2][x]:
+                    if g[y][x + 1][0] == g[y + 1][x][0] == g[y + 2][x][0]:
                         return False
                 # Ligne horizontale à gauche
                 if x - 2 < w_g:
-                    if g[y][x + 1] == g[y][x - 1] == g[y][x - 2]:
+                    if g[y][x + 1][0] == g[y][x - 1][0] == g[y][x - 2][0]:
                         return False
             # Échange vers le bas
             if y + 1 < h_g:
                 # 1) Bonbon échangé vers le bas
                 # Ligne horizontale à droite
                 if x + 2 < w_g:
-                    if g[y][x] == g[y - 1][x + 1] == g[y - 1][x + 2]:
+                    if g[y][x][0] == g[y - 1][x + 1][0] == g[y - 1][x + 2][0]:
                         return False
                 # Ligne horizontale milieu
                 if x - 1 >= 0 and x + 1 < w_g:
-                    if g[y - 1][x - 1] == g[y][x] == g[y - 1][x + 1]:
+                    if g[y - 1][x - 1][0] == g[y][x][0] == g[y - 1][x + 1][0]:
                         return False
                 # Ligne horizontale à gauche
                 if x - 2 >= 0:
-                    if g[y - 1][x - 2] == g[y - 1][x - 1] == g[y][x]:
+                    if g[y - 1][x - 2][0] == g[y - 1][x - 1][0] == g[y][x][0]:
                         return False
                 # Ligne verticale en bas
                 if y - 3 < h_g:
-                    if g[y][x] == g[y - 2][x] == g[y - 3][x]:
+                    if g[y][x][0] == g[y - 2][x][0] == g[y - 3][x][0]:
                         return False
                 # 2) Bonbon échangé vers le haut
                 # Ligne horizontale à droite
                 if x + 2 < w_g:
-                    if g[y + 1][x] == g[y][x + 1] == g[y + 1][x + 2]:
+                    if g[y + 1][x][0] == g[y][x + 1][0] == g[y + 1][x + 2][0]:
                         return False
                 # Ligne horizontale milieu
                 if x - 1 >= 0 and x + 1 < w_g:
-                    if g[y][x - 1] == g[y + 1][x] == g[y][x + 1]:
+                    if g[y][x - 1][0] == g[y + 1][x][0] == g[y][x + 1][0]:
                         return False
                 # Ligne horizontale à gauche
                 if x - 2 >= 0:
-                    if g[y][x - 2] == g[y][x - 1] == g[y + 1][x]:
+                    if g[y][x - 2][0] == g[y][x - 1][0] == g[y + 1][x][0]:
                         return False
                 # Ligne verticale en haut
                 if y - 2 >= 0:
-                    if g[y - 2][x] == g[y - 1][x] == g[y + 1][x]:
+                    if g[y - 2][x][0] == g[y - 1][x][0] == g[y + 1][x][0]:
                         return False
     return True
 
@@ -345,8 +344,8 @@ def ajouter_bonbons_aleatoires(grille: liste_2d, nb_type_bonbons: int):
     """
     for i in range(len(grille[0])):
         j = 0
-        while j < len(grille) and grille[j][i] == -1:
-            grille[j][i] = randint(0, nb_type_bonbons - 1)
+        while j < len(grille) and grille[j][i] == "__":
+            grille[j][i] = str(randint(0, nb_type_bonbons - 1)) + "_"
             j += 1
 
 
