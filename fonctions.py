@@ -22,7 +22,12 @@ def charger_grille(fichier: str) -> liste_2d:
         for ligne_str in f.read().split("\n"):
             ligne = []
             for numero in ligne_str.split():
-                ligne.append(numero + "_")
+                # Si numéro seul, on met un _ pour la convention
+                if len(numero) == 1:
+                    ligne.append(numero + "_")
+                # Sinon on ajoute l'élément à la liste
+                else:
+                    ligne.append(numero)
             if len(ligne):
                 grille.append(ligne)
     return grille

@@ -35,6 +35,18 @@ class ChargerGrille(TestCase):
             ],
         )
 
+    def test_chargement_avec_bonus(self):
+        grille = charger_grille("data/exemple_bonus.csv")
+        self.assertEqual(
+            grille,
+            [
+                ["1_", "0p", "2_", "4v"],
+                ["2v", "1_", "1_", "5v"],
+                ["2_", "5h", "3_", "1_"],
+                ["4v", "1_", "1_", "2v"],
+            ],
+        )
+
 
 class EchangerDeuxBonbons(TestCase):
     def test_1(self):
