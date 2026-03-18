@@ -206,13 +206,10 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
         grille (liste 2D) : la grille d'origine
 
     Returns:
-        (nouvelle_grille, grille_modifiee) (liste 2D, bool) :
-        - la grille sans les bonbons formant des lignes
-        - un booléen montrant si la grille à été modifiée
+        nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
 
     """
     nouvelle_grille = dupliquer_grille(grille)
-    grille_modifiee = False
 
     for y in range(len(grille)):
         for x in range(len(grille[y])):
@@ -220,7 +217,6 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
                 nouvelle_grille[y][x - 2] = "__"
                 nouvelle_grille[y][x - 1] = "__"
                 nouvelle_grille[y][x] = "__"
-                grille_modifiee = True
                 # TODO
                 # Si bonbon spécial, faire l'action
                 # TODO
@@ -234,7 +230,6 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
                 nouvelle_grille[y - 2][x] = "__"
                 nouvelle_grille[y - 1][x] = "__"
                 nouvelle_grille[y][x] = "__"
-                grille_modifiee = True
                 # TODO
                 # Si bonbon spécial, faire l'action
                 # TODO
@@ -244,7 +239,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
                 # elif y >= 3 and grille[y - 3][x] == grille[y][x]:
                 #     # Ajout du bonbon -v
                 #     pass
-    return nouvelle_grille, grille_modifiee
+    return nouvelle_grille
 
 
 def jeu_est_bloque(grille: liste_2d) -> bool:
@@ -370,7 +365,7 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
         nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
 
     """
-    nouvelle_grille = supprimer_bonbons_en_ligne(grille)[0]
+    nouvelle_grille = supprimer_bonbons_en_ligne(grille)
     appliquer_gravite(nouvelle_grille)
     ajouter_bonbons_aleatoires(nouvelle_grille, nb_type_bonbons)
     return nouvelle_grille

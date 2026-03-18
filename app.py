@@ -217,8 +217,9 @@ class Grille:
 
     def play_move(self):
         self.actualiser_bonbons(bind_events=False)
-        nouvelle_grille, grille_modifiee = supprimer_bonbons_en_ligne(self.grille)
-        while grille_modifiee:
+        nouvelle_grille = supprimer_bonbons_en_ligne(self.grille)
+        stable = grille_est_stable(self.grille, nouvelle_grille)
+        while not stable:
             self.grille = nouvelle_grille
             sleep(DELAY)
             self.actualiser_bonbons(bind_events=False)
@@ -227,8 +228,9 @@ class Grille:
             self.actualiser_bonbons(bind_events=False)
             sleep(DELAY)
             ajouter_bonbons_aleatoires(self.grille, self.nb_bonbons)
-            nouvelle_grille, grille_modifiee = supprimer_bonbons_en_ligne(self.grille)
-            if grille_modifiee:
+            nouvelle_grille = supprimer_bonbons_en_ligne(self.grille)
+            stable = grille_est_stable(self.grille, nouvelle_grille)
+            if not stable:
                 self.actualiser_bonbons(bind_events=False)
         self.actualiser_bonbons()
 
