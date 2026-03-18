@@ -302,24 +302,24 @@ def jeu_est_bloque(grille: liste_2d) -> bool:
                 # 1) Bonbon échangé vers le bas
                 # Ligne horizontale à droite
                 if x + 2 < w_g:
-                    if g[y][x][0] == g[y - 1][x + 1][0] == g[y - 1][x + 2][0]:
+                    if g[y][x][0] == g[y + 1][x + 1][0] == g[y + 1][x + 2][0]:
                         return False
                 # Ligne horizontale milieu
                 if x - 1 >= 0 and x + 1 < w_g:
-                    if g[y - 1][x - 1][0] == g[y][x][0] == g[y - 1][x + 1][0]:
+                    if g[y + 1][x - 1][0] == g[y][x][0] == g[y + 1][x + 1][0]:
                         return False
                 # Ligne horizontale à gauche
                 if x - 2 >= 0:
-                    if g[y - 1][x - 2][0] == g[y - 1][x - 1][0] == g[y][x][0]:
+                    if g[y + 1][x - 2][0] == g[y + 1][x - 1][0] == g[y][x][0]:
                         return False
                 # Ligne verticale en bas
-                if y - 3 < h_g:
-                    if g[y][x][0] == g[y - 2][x][0] == g[y - 3][x][0]:
+                if y + 3 < h_g:
+                    if g[y][x][0] == g[y + 2][x][0] == g[y + 3][x][0]:
                         return False
                 # 2) Bonbon échangé vers le haut
                 # Ligne horizontale à droite
                 if x + 2 < w_g:
-                    if g[y + 1][x][0] == g[y][x + 1][0] == g[y + 1][x + 2][0]:
+                    if g[y + 1][x][0] == g[y][x + 1][0] == g[y][x + 2][0]:
                         return False
                 # Ligne horizontale milieu
                 if x - 1 >= 0 and x + 1 < w_g:

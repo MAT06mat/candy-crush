@@ -106,7 +106,7 @@ class JeuBloque(TestCase):
 
     def test_defaut_2(self):
         grille = [["1_", "2_", "0_"], ["0_", "2_", "4_"], ["1_", "0_", "3_"]]
-        self.assertFalse(jeu_est_bloque(grille))
+        self.assertTrue(jeu_est_bloque(grille))
 
     def test_defaut_3(self):
         grille = charger_grille("data/exemple_grille.csv")
