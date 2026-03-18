@@ -12,21 +12,21 @@ Pour le moment, nous allons partir sur le niveau 1, mais on va surement rajouter
 
 Convention pour la grille :
 
-- Le premier caractère donne la couleur, "_" si case vide ou "r" si bonbon arc-en-ciel
+- Le premier caractère donne la couleur, "\_" si case vide ou "r" si bonbon arc-en-ciel
 
-- Le deuxième caractère donne le bonnus, "_" si aucun
+- Le deuxième caractère donne le bonnus, "\_" si aucun
 
 - Les bonus sons : v - vertical / h - horizontal / p - explosif
 
 Exemple :
 
-- "0_" le bonbon est normal de la première couleur
+- "0\_" le bonbon est normal de la première couleur
 
 - "2v" le bonbon à un bonus vertical et est de la deuxème couleur
 
-- "r_" c'est un bonbon arc-en-ciel, par convention on met sa couleur à "r" et on ne lui met pas de bonus
+- "r\_" c'est un bonbon arc-en-ciel, par convention on met sa couleur à "r" et on ne lui met pas de bonus
 
-- "__" est une case vide
+- "\_\_" est une case vide
 
 ## Algorithme en pseudo code
 
@@ -57,7 +57,7 @@ Remplir les emplacements vides par de nouveux bonbons aléatoires
 
 | Fonction                   | Chargé de la réalisation | Terminé |
 | -------------------------- | ------------------------ | ------- |
-| charger_grille             | Tout le monde            | Oui     |
+| charger_fichier            | Tout le monde            | Oui     |
 | jeu_est_bloque             | Matthieu                 | Oui     |
 | afficher_grille            | Arthur                   | Oui     |
 | demander_mouvement         | Théo                     | Oui     |
@@ -71,10 +71,10 @@ Remplir les emplacements vides par de nouveux bonbons aléatoires
 
 ## Sous tâches
 
-### charger_grille
+### charger_fichier
 
 ```py
-def charger_grille(fichier: str) -> list[list[str]]:
+def charger_fichier(fichier: str) -> list[list[str]]:
     """
     Récupère la grille dans le fichier csv et la retourne sous forme de liste 2D de str
 

@@ -5,7 +5,7 @@ from random import randint
 liste_2d = list[list[str]]
 
 
-def charger_grille(fichier: str) -> liste_2d:
+def charger_fichier(fichier: str) -> liste_2d:
     """
     Récupère la grille dans le fichier csv et la retourne sous forme de liste 2D d'entiers
 
@@ -373,5 +373,5 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
 
 
 if __name__ == "__main__":
-    g = charger_grille("data/exemple_grille.csv")
+    g = charger_fichier("data/exemple_grille.csv")
     afficher_grille(g)

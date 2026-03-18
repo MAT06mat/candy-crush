@@ -4,7 +4,7 @@ from fonctions import *
 
 class ChargerGrille(TestCase):
     def test_chargement_default(self):
-        grille = charger_grille("data/exemple_grille.csv")
+        grille = charger_fichier("data/exemple_grille.csv")
         self.assertEqual(
             grille,
             [
@@ -20,7 +20,7 @@ class ChargerGrille(TestCase):
         )
 
     def test_chargement_vide(self):
-        grille = charger_grille("data/grille_vide.csv")
+        grille = charger_fichier("data/grille_vide.csv")
         self.assertEqual(
             grille,
             [
@@ -36,7 +36,7 @@ class ChargerGrille(TestCase):
         )
 
     def test_chargement_avec_bonus(self):
-        grille = charger_grille("data/exemple_bonus.csv")
+        grille = charger_fichier("data/exemple_bonus.csv")
         self.assertEqual(
             grille,
             [
@@ -109,11 +109,11 @@ class JeuBloque(TestCase):
         self.assertTrue(jeu_est_bloque(grille))
 
     def test_defaut_3(self):
-        grille = charger_grille("data/exemple_grille.csv")
+        grille = charger_fichier("data/exemple_grille.csv")
         self.assertFalse(jeu_est_bloque(grille))
 
     def test_defaut_4(self):
-        grille = charger_grille("data/grille_vide.csv")
+        grille = charger_fichier("data/grille_vide.csv")
         self.assertFalse(jeu_est_bloque(grille))
 
     def test_defaut_5(self):
