@@ -72,7 +72,7 @@ class SupprimerBonbonsLigne(TestCase):
     def test_defaut(self):
         grille_1 = [["1_", "2_", "3_"], ["4_", "5_", "3_"], ["4_", "5_", "3_"]]
         grille_2 = [["1_", "2_", "__"], ["4_", "5_", "__"], ["4_", "5_", "__"]]
-        self.assertEqual(grille_2, supprimer_bonbons_en_ligne(grille_1))
+        self.assertEqual(grille_2, supprimer_bonbons_en_ligne(grille_1)[0])
 
     def test_plusieurs(self):
         grille_1 = [
@@ -87,12 +87,12 @@ class SupprimerBonbonsLigne(TestCase):
             ["__", "__", "2_"],
             ["__", "__", "2_"],
         ]
-        self.assertEqual(grille_2, supprimer_bonbons_en_ligne(grille_1))
+        self.assertEqual(grille_2, supprimer_bonbons_en_ligne(grille_1)[0])
 
     def test_plusieurs_2(self):
         grille_1 = [["1_", "1_", "1_"], ["2_", "3_", "1_"], ["1_", "4_", "1_"]]
         grille_2 = [["__", "__", "__"], ["2_", "3_", "__"], ["1_", "4_", "__"]]
-        self.assertEqual(grille_2, supprimer_bonbons_en_ligne(grille_1))
+        self.assertEqual(grille_2, supprimer_bonbons_en_ligne(grille_1)[0])
 
 
 class JeuBloque(TestCase):

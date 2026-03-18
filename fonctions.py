@@ -59,17 +59,17 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4) -> liste_2d:
     for y in range(m):
         ligne = []
         for x in range(n):
-            colors = "012345"[0:nb_couleurs]
+            couleurs = "012345"[0:nb_couleurs]
 
-            if x >= 2 and ligne[x - 1] in colors:
-                if ligne[x - 2] == ligne[x - 1]:
-                    colors.remove(ligne[x - 1])
+            if x >= 2:
+                if ligne[x - 2][0] == ligne[x - 1][0]:
+                    couleurs = couleurs.replace(ligne[x - 1][0], "")
 
-            if y >= 2 and grille[y - 1][x] in colors:
-                if grille[y - 2][x] == grille[y - 1][x]:
-                    colors.remove(grille[y - 1][x])
+            if y >= 2:
+                if grille[y - 2][x][0] == grille[y - 1][x][0]:
+                    couleurs = couleurs.replace(grille[y - 1][x][0], "")
 
-            ligne.append(choice(colors) + "_")
+            ligne.append(choice(couleurs) + "_")
         grille.append(ligne)
     return grille
 
@@ -116,8 +116,8 @@ def demander_mouvement():
     Params:
 
     Returns:
-        pos_i (int, int) : liste de deux entiers pour les coordonnées initiales du bonbon à déplacer
-        pos_f (int, int) : liste de deux entiers pour les coordonnées finales du bonbon à déplacer
+        (pos_i, pos_f) ((int, int), (int, int)) :
+        - liste des deux positions contenant deux entiers pour les coordonnées initiales et finales du bonbon à déplacer
 
     """
     pos_i = []
@@ -206,8 +206,9 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
         grille (liste 2D) : la grille d'origine
 
     Returns:
-        nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
-        grille_modifiee (bool) : si la grille à été modifiée
+        (nouvelle_grille, grille_modifiee) (liste 2D, bool) :
+        - la grille sans les bonbons formant des lignes
+        - un booléen montrant si la grille à été modifiée
 
     """
     nouvelle_grille = dupliquer_grille(grille)
@@ -369,7 +370,7 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
         nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
 
     """
-    nouvelle_grille = supprimer_bonbons_en_ligne(grille)
+    nouvelle_grille = supprimer_bonbons_en_ligne(grille)[0]
     appliquer_gravite(nouvelle_grille)
     ajouter_bonbons_aleatoires(nouvelle_grille, nb_type_bonbons)
     return nouvelle_grille
