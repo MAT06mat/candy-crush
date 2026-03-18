@@ -215,9 +215,15 @@ class Grille:
 
         self.conteneur.root.update()
 
-    def play_move(self):
+    def play_move(self, x: int, y: int):
+        echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
+        nouvelle_grille = supprimer_bonbons_en_ligne(
+            self.grille, self.bonbon_choisi, (x, y)
+        )
+
+        self.bonbon_choisi = None
         self.actualiser_bonbons(bind_events=False)
-        nouvelle_grille = supprimer_bonbons_en_ligne(self.grille)
+
         stable = grille_est_stable(self.grille, nouvelle_grille)
         while not stable:
             self.grille = nouvelle_grille
@@ -239,9 +245,7 @@ class Grille:
             if self.bonbon_choisi == (x, y):
                 self.bonbon_choisi = None
             elif self.bonbon_choisi:
-                echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
-                self.bonbon_choisi = None
-                self.play_move()
+                self.play_move(x, y)
             else:
                 self.bonbon_choisi = (x, y)
 

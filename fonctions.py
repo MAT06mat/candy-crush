@@ -195,15 +195,79 @@ def appliquer_gravite(grille: liste_2d):
                     echanger_deux_bonbons(grille, [j, k - 1], [j, k])
 
 
-def supprimer_bonbons_en_ligne(grille: liste_2d):
+def obtenir_zone_speciale(grille, x, y, bonbon):
+    zone_impactee = []
+    hauteur = len(grille)
+    largeur = len(grille[0])
+
+    if bonbon[1] == "v":
+        for i in range(hauteur):
+            zone_impactee.append((x, i))
+
+    elif bonbon[1] == "h":
+        for i in range(largeur):
+            zone_impactee.append((i, y))
+
+    elif bonbon[1] == "p":
+        for i in range(max(0, y - 1), min(hauteur, y + 2)):
+            for j in range(max(0, x - 1), min(largeur, x + 2)):
+                zone_impactee.append((j, i))
+
+    return zone_impactee
+
+
+def obtenir_alignement_horizontal(grille, x, y):
+    # Cherche tous les bonbons identiques à gauche et à droite de (x, y)
+    couleur = grille[y][x][0]
+    alignement = [(x, y)]
+
+    # Vers la gauche
+    nx = x - 1
+    while nx >= 0 and grille[y][nx][0] == couleur:
+        alignement.append((nx, y))
+        nx -= 1
+
+    # Vers la droite
+    nx = x + 1
+    while nx < len(grille[0]) and grille[y][nx][0] == couleur:
+        alignement.append((nx, y))
+        nx += 1
+
+    return alignement if len(alignement) >= 3 else []
+
+
+def obtenir_alignement_vertical(grille, x, y):
+    # Cherche tous les bonbons identiques en haut et en bas de (x, y)
+    couleur = grille[y][x][0]
+    alignement = [(x, y)]
+
+    # Vers le haut
+    ny = y - 1
+    while ny >= 0 and grille[ny][x][0] == couleur:
+        alignement.append((ny, x))  # Attention : format (x, y) pour cohérence
+        alignement[-1] = (x, ny)  # Correction de l'ordre
+        ny -= 1
+
+    # Vers le bas
+    ny = y + 1
+    while ny < len(grille) and grille[ny][x][0] == couleur:
+        alignement.append((x, ny))
+        ny += 1
+
+    return alignement if len(alignement) >= 3 else []
+
+
+def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
     """
-    Duplique la grille et supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
+    Supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
     Supprime les bonbons par rapport à la grille de référence qui à été dupliqué.
     Retourne la nouvelle grille sans les bonbons formant des lignes (ils sont remplacés par des "__")
     Retourne aussi un booléen indiquant si la grille à été modifiée.
 
     Params:
         grille (liste 2D) : la grille d'origine
+        pos_i (list[int] | None) : position du bonbon à échanger
+        pos_f (list[int] | None) : position du bonbon échangé
 
     Returns:
         nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
@@ -211,34 +275,86 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
     """
     nouvelle_grille = dupliquer_grille(grille)
 
-    for y in range(len(grille)):
-        for x in range(len(grille[y])):
-            if x >= 2 and grille[y][x - 2][0] == grille[y][x - 1][0] == grille[y][x][0]:
-                nouvelle_grille[y][x - 2] = "__"
-                nouvelle_grille[y][x - 1] = "__"
-                nouvelle_grille[y][x] = "__"
-                # TODO
-                # Si bonbon spécial, faire l'action
-                # TODO
-                # if x >= 4 and grille[y][x - 4] == grille[y][x - 3] == grille[y][x]:
-                #     # Ajout du bonbon arc-en-ciel
-                #     pass
-                # elif x >= 3 and grille[y][x - 3] == grille[y][x]:
-                #     # Ajout du bonbon -h
-                #     pass
-            if y >= 2 and grille[y - 2][x][0] == grille[y - 1][x][0] == grille[y][x][0]:
-                nouvelle_grille[y - 2][x] = "__"
-                nouvelle_grille[y - 1][x] = "__"
-                nouvelle_grille[y][x] = "__"
-                # TODO
-                # Si bonbon spécial, faire l'action
-                # TODO
-                # if y >= 4 and grille[y - 4][x] == grille[y - 3][x] == grille[y][x]:
-                #     # Ajout du bonbon arc-en-ciel
-                #     pass
-                # elif y >= 3 and grille[y - 3][x] == grille[y][x]:
-                #     # Ajout du bonbon -v
-                #     pass
+    hauteur = len(grille)
+    largeur = len(grille[0])
+    a_supprimer = set()
+    # On utilise un dictionnaire pour ne garder qu'un seul bonus prioritaire
+    # par zone de suppression (clé: coordonnée, valeur: type de bonbon)
+    bonus_potentiels = {}
+
+    # Analyse des alignements verticaux et horizontaux
+    for y in range(hauteur):
+        for x in range(largeur):
+            couleur_actuelle = grille[y][x][0]
+            if couleur_actuelle == "_":
+                continue
+
+            h_match = obtenir_alignement_horizontal(grille, x, y)
+            v_match = obtenir_alignement_vertical(grille, x, y)
+
+            if not h_match and not v_match:
+                continue
+
+            couleur = grille[y][x][0]
+            # La position où on va créer le bonus (priorité au clic de l'utilisateur)
+            pos_creation = (x, y)
+            if pos_f and (pos_f in h_match or pos_f in v_match):
+                pos_creation = pos_f
+
+            # --- DETECTION DES FORMES ---
+
+            # Intersection (T, L, +) : match horizontal ET vertical
+            if h_match and v_match:
+                for coord in h_match + v_match:
+                    a_supprimer.add(coord)
+                bonus_potentiels[pos_creation] = couleur + "p"
+
+            # Ligne de 4 ou plus
+            elif len(h_match) >= 4:
+                for coord in h_match:
+                    a_supprimer.add(coord)
+                # Horizontal >= 4 -> Bonbon à rayures Verticales
+                bonus_potentiels[pos_creation] = couleur + "v"
+
+            elif len(v_match) >= 4:
+                for coord in v_match:
+                    a_supprimer.add(coord)
+                # Vertical >= 4 -> Bonbon à rayures Horizontales
+                bonus_potentiels[pos_creation] = couleur + "h"
+
+            # Match de 3 simple
+            else:
+                for coord in h_match + v_match:
+                    a_supprimer.add(coord)
+
+    # Gestion des réactions en chaîne (ton code existant optimisé)
+    deja_traites = set()
+    doit_analyser = True
+    while doit_analyser:
+        nouveaux = set()
+        for x, y in a_supprimer:
+            if (x, y) not in deja_traites:
+                bonbon = grille[y][x]
+                if len(bonbon) > 1 and bonbon[1] in "vhp":
+                    zone = obtenir_zone_speciale(grille, x, y, bonbon)
+                    for c in zone:
+                        if c not in a_supprimer:
+                            nouveaux.add(c)
+                deja_traites.add((x, y))
+
+        if len(nouveaux) == 0:
+            doit_analyser = False
+        else:
+            a_supprimer.update(nouveaux)
+
+    for x, y in a_supprimer:
+        nouvelle_grille[y][x] = "__"
+
+    # On place les bonus. On vérifie que la position du bonus
+    # n'a pas été elle-même soufflée par une réaction en chaîne.
+    for pos, type_bonus in bonus_potentiels.items():
+        nouvelle_grille[pos[1]][pos[0]] = type_bonus
+
     return nouvelle_grille
 
 
