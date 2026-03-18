@@ -19,6 +19,8 @@ COLOR_PATH = {
 }
 TUILES_PATH = ["TL", "T", "TR", "L", "C", "R", "BL", "B", "BR"]
 
+DELAY = 0.3  # en sec
+
 
 class CandyCrush:
     def __init__(self, x=7, y=6, nb_bonbons=6, background="forest"):
@@ -169,16 +171,13 @@ class Grille:
                     x_pos - GAP / 2, y_pos - GAP / 2, image=tuile, anchor="nw"
                 )
 
-    def actualiser_bonbons(self, grille=None, bind_events=True):
+    def actualiser_bonbons(self, bind_events=True):
         """Dessine ou actualise les bonbons"""
 
         # Supprime tous les éléments qui ont le tag dynamic
         self.canvas.delete("dynamic")
 
-        if grille:
-            g = grille
-        else:
-            g = self.grille
+        g = self.grille
 
         # Affiche le selecteur de bonbon autour du bonbon choisi
         if self.bonbon_choisi:
@@ -218,19 +217,19 @@ class Grille:
 
     def play_move(self):
         self.actualiser_bonbons(bind_events=False)
-        stable = False
-        while not stable:
-            sleep(0.3)
-            nouvelle_grille = supprimer_bonbons_en_ligne(self.grille)
-            self.actualiser_bonbons(nouvelle_grille, bind_events=False)
-            sleep(0.3)
-            appliquer_gravite(nouvelle_grille)
-            self.actualiser_bonbons(nouvelle_grille, bind_events=False)
-            sleep(0.3)
-            ajouter_bonbons_aleatoires(nouvelle_grille, self.nb_bonbons)
-            self.actualiser_bonbons(nouvelle_grille, bind_events=False)
-            stable = grille_est_stable(self.grille, nouvelle_grille)
+        nouvelle_grille, grille_modifiee = supprimer_bonbons_en_ligne(self.grille)
+        while grille_modifiee:
             self.grille = nouvelle_grille
+            sleep(DELAY)
+            self.actualiser_bonbons(bind_events=False)
+            sleep(DELAY)
+            appliquer_gravite(self.grille)
+            self.actualiser_bonbons(bind_events=False)
+            sleep(DELAY)
+            ajouter_bonbons_aleatoires(self.grille, self.nb_bonbons)
+            nouvelle_grille, grille_modifiee = supprimer_bonbons_en_ligne(self.grille)
+            if grille_modifiee:
+                self.actualiser_bonbons(bind_events=False)
         self.actualiser_bonbons()
 
     def create_callback(self, x, y):

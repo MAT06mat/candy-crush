@@ -59,9 +59,7 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4) -> liste_2d:
     for y in range(m):
         ligne = []
         for x in range(n):
-            colors = []
-            for c in range(nb_couleurs):
-                colors.append(str(c))
+            colors = "012345"[0:nb_couleurs]
 
             if x >= 2 and ligne[x - 1] in colors:
                 if ligne[x - 2] == ligne[x - 1]:
@@ -197,20 +195,23 @@ def appliquer_gravite(grille: liste_2d):
                     echanger_deux_bonbons(grille, [j, k - 1], [j, k])
 
 
-def supprimer_bonbons_en_ligne(grille: liste_2d) -> liste_2d:
+def supprimer_bonbons_en_ligne(grille: liste_2d):
     """
     Duplique la grille et supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
     Supprime les bonbons par rapport à la grille de référence qui à été dupliqué.
-    Retourne la nouvelle grille sans les bonbons formant des lignes (ils sont remplacés par des -1)
+    Retourne la nouvelle grille sans les bonbons formant des lignes (ils sont remplacés par des "__")
+    Retourne aussi un booléen indiquant si la grille à été modifiée.
 
     Params:
         grille (liste 2D) : la grille d'origine
 
     Returns:
         nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
+        grille_modifiee (bool) : si la grille à été modifiée
 
     """
     nouvelle_grille = dupliquer_grille(grille)
+    grille_modifiee = False
 
     for y in range(len(grille)):
         for x in range(len(grille[y])):
@@ -218,6 +219,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d) -> liste_2d:
                 nouvelle_grille[y][x - 2] = "__"
                 nouvelle_grille[y][x - 1] = "__"
                 nouvelle_grille[y][x] = "__"
+                grille_modifiee = True
                 # TODO
                 # Si bonbon spécial, faire l'action
                 # TODO
@@ -231,6 +233,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d) -> liste_2d:
                 nouvelle_grille[y - 2][x] = "__"
                 nouvelle_grille[y - 1][x] = "__"
                 nouvelle_grille[y][x] = "__"
+                grille_modifiee = True
                 # TODO
                 # Si bonbon spécial, faire l'action
                 # TODO
@@ -240,7 +243,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d) -> liste_2d:
                 # elif y >= 3 and grille[y - 3][x] == grille[y][x]:
                 #     # Ajout du bonbon -v
                 #     pass
-    return nouvelle_grille
+    return nouvelle_grille, grille_modifiee
 
 
 def jeu_est_bloque(grille: liste_2d) -> bool:
