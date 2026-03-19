@@ -233,7 +233,10 @@ def obtenir_alignement_horizontal(grille, x, y):
         alignement.append((nx, y))
         nx += 1
 
-    return alignement if len(alignement) >= 3 else []
+    if len(alignement) < 3:
+        alignement = []
+
+    return alignement
 
 
 def obtenir_alignement_vertical(grille, x, y):
@@ -254,7 +257,10 @@ def obtenir_alignement_vertical(grille, x, y):
         alignement.append((x, ny))
         ny += 1
 
-    return alignement if len(alignement) >= 3 else []
+    if len(alignement) < 3:
+        alignement = []
+
+    return alignement
 
 
 def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
@@ -282,12 +288,54 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
     # par zone de suppression (clé: coordonnée, valeur: type de bonbon)
     bonus_potentiels = {}
 
+    colonnes_a_supprimer = set()
+    lignes_a_supprimer = set()
+
+    # Combinaison de bonus
+    if pos_i and pos_f:
+        xi, yi = pos_i
+        xf, yf = pos_f
+
+        if grille[yi][xi][1] in "vh" and grille[yf][xf][1] in "vh":
+            grille[yi][xi] = grille[yi][xi][0] + "_"
+            grille[yf][xf] = grille[yf][xf][0] + "_"
+
+            # Supprimer ligne et colonne de la position finale
+            colonnes_a_supprimer.add(xf)
+            lignes_a_supprimer.add(yf)
+
+        elif grille[yi][xi][1] == "p" and grille[yf][xf][1] == "p":
+            grille[yi][xi] = grille[yi][xi][0] + "_"
+            grille[yf][xf] = grille[yf][xf][0] + "_"
+
+            # Supprimer carré de 5x5 avec la position finale comme centre
+            for i in range(max(0, yf - 2), min(hauteur, yf + 3)):
+                for j in range(max(0, xf - 2), min(largeur, xf + 3)):
+                    a_supprimer.add((j, i))
+
+        elif grille[yi][xi][1] in "vhp" and grille[yf][xf][1] in "vhp":
+            grille[yi][xi] = grille[yi][xi][0] + "_"
+            grille[yf][xf] = grille[yf][xf][0] + "_"
+
+            # Supprimer 3 lignes et 3 colonnes avec pour centre la position finale
+            colonnes_a_supprimer.add(xf - 1)
+            colonnes_a_supprimer.add(xf)
+            colonnes_a_supprimer.add(xf + 1)
+            lignes_a_supprimer.add(yf - 1)
+            lignes_a_supprimer.add(yf)
+            lignes_a_supprimer.add(yf + 1)
+
     # Analyse des alignements verticaux et horizontaux
     for y in range(hauteur):
         for x in range(largeur):
             couleur_actuelle = grille[y][x][0]
             if couleur_actuelle == "_":
                 continue
+
+            if y in lignes_a_supprimer:
+                a_supprimer.add((x, y))
+            elif x in colonnes_a_supprimer:
+                a_supprimer.add((x, y))
 
             h_match = obtenir_alignement_horizontal(grille, x, y)
             v_match = obtenir_alignement_vertical(grille, x, y)
@@ -307,20 +355,24 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
             if h_match and v_match:
                 for coord in h_match + v_match:
                     a_supprimer.add(coord)
-                bonus_potentiels[pos_creation] = couleur + "p"
+                bonus_potentiels[(h_match[0][0], v_match[0][1])] = couleur + "p"
 
             # Ligne de 4 ou plus
             elif len(h_match) >= 4:
+                # Horizontal >= 4 -> Bonbon à rayures Verticales
+                if pos_creation not in a_supprimer:
+                    bonus_potentiels[pos_creation] = couleur + "v"
+
                 for coord in h_match:
                     a_supprimer.add(coord)
-                # Horizontal >= 4 -> Bonbon à rayures Verticales
-                bonus_potentiels[pos_creation] = couleur + "v"
 
             elif len(v_match) >= 4:
+                # Vertical >= 4 -> Bonbon à rayures Horizontales
+                if pos_creation not in a_supprimer:
+                    bonus_potentiels[pos_creation] = couleur + "h"
+
                 for coord in v_match:
                     a_supprimer.add(coord)
-                # Vertical >= 4 -> Bonbon à rayures Horizontales
-                bonus_potentiels[pos_creation] = couleur + "h"
 
             # Match de 3 simple
             else:
