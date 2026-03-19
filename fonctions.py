@@ -348,6 +348,8 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
             pos_creation = (x, y)
             if pos_f and (pos_f in h_match or pos_f in v_match):
                 pos_creation = pos_f
+            elif pos_i and (pos_i in h_match or pos_i in v_match):
+                pos_creation = pos_i
 
             # --- DETECTION DES FORMES ---
 
@@ -355,6 +357,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
             if h_match and v_match:
                 for coord in h_match + v_match:
                     a_supprimer.add(coord)
+                    bonus_potentiels.pop(coord, None)
                 bonus_potentiels[(h_match[0][0], v_match[0][1])] = couleur + "p"
 
             # Ligne de 4 ou plus
@@ -379,7 +382,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
                 for coord in h_match + v_match:
                     a_supprimer.add(coord)
 
-    # Gestion des réactions en chaîne (ton code existant optimisé)
+    # Gestion des réactions en chaîne
     deja_traites = set()
     doit_analyser = True
     while doit_analyser:
