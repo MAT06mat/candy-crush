@@ -353,11 +353,28 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
 
             # --- DETECTION DES FORMES ---
 
+            if len(h_match) >= 5:
+                # Horizontal >= 5 -> Bonbon arc-en-ciel
+                for coord in h_match:
+                    a_supprimer.add(coord)
+                    bonus_potentiels.pop(coord, None)
+
+                bonus_potentiels[h_match[len(h_match) // 2]] = "r_"
+
+            elif len(v_match) >= 5:
+                # Vertical >= 5 -> Bonbon arc-en-ciel
+                for coord in v_match:
+                    a_supprimer.add(coord)
+                    bonus_potentiels.pop(coord, None)
+
+                bonus_potentiels[v_match[len(v_match) // 2]] = "r_"
+
             # Intersection (T, L, +) : match horizontal ET vertical
-            if h_match and v_match:
+            elif h_match and v_match:
                 for coord in h_match + v_match:
                     a_supprimer.add(coord)
                     bonus_potentiels.pop(coord, None)
+
                 bonus_potentiels[(h_match[0][0], v_match[0][1])] = couleur + "p"
 
             # Ligne de 4 ou plus

@@ -198,14 +198,14 @@ class Grille:
                 y_pos = PY + (SIZE + GAP) * y
 
                 if g[y][x][1] in "vhp":
-                    bonbon_img = self.get_asset(
-                        f"{COLOR_PATH[g[y][x][0]]}-{g[y][x][1]}"
-                    )
+                    img = self.get_asset(f"{COLOR_PATH[g[y][x][0]]}-{g[y][x][1]}")
+                elif g[y][x] == "r_":
+                    img = self.get_asset("rainbow")
                 else:
-                    bonbon_img = self.get_asset(COLOR_PATH[g[y][x][0]])
+                    img = self.get_asset(COLOR_PATH[g[y][x][0]])
 
                 bonbon = self.canvas.create_image(
-                    x_pos, y_pos, image=bonbon_img, anchor="nw", tags="dynamic"
+                    x_pos, y_pos, image=img, anchor="nw", tags="dynamic"
                 )
 
                 if bind_events:
