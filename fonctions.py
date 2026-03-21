@@ -7,13 +7,13 @@ liste_2d = list[list[str]]
 
 def charger_fichier(fichier: str) -> liste_2d:
     """
-    Récupère la grille dans le fichier csv et la retourne sous forme de liste 2D d'entiers
+    Récupère la grille dans le fichier csv et la retourne sous forme de liste 2D de str
 
     Params:
         fichier (str) : le nom du fichier à charger
 
     Returns:
-        grille (liste 2D) : liste 2D d'entiers
+        grille (liste 2D) : liste 2D de str
 
     """
 
@@ -43,7 +43,7 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4) -> liste_2d:
         nb_couleurs (int) : nombre maxmimum de couleur différentes dans la grille
 
     Returns:
-        grille (liste 2D) : liste 2D d'entiers
+        grille (liste 2D) : liste 2D de str
 
     """
 
@@ -97,7 +97,7 @@ def afficher_grille(grille: liste_2d, dico_bonbon: dict, dico_bonus: dict):
     Réalise l'affichage dans le terminal de la liste 2D mis en paramètre.
 
     Params:
-        grille (liste 2D) : liste 2D d'entiers
+        grille (liste 2D) : liste 2D de str
         dico_bonbon (dictionnaire) : dictionnaire associant chaque type de bonbon à son icône correspondante
         dico_bonus (dictionnaire) : dictionnaire associant chaque bonus à son caractère correspondant
 
@@ -155,8 +155,8 @@ def grille_est_stable(grille: liste_2d, nouvelle_grille: liste_2d) -> bool:
     Vérifie qu'il n'y a pas plus de mouvements possible après le remplissage de la grille par de nouveaux bonbons en comparant les deux dernières grilles
 
     Params:
-        grille (liste 2D) : liste 2D d'entiers représentant la grille actuelle
-        nouvelle_grille (liste 2D) : liste 2D d'entiers représentant la nouvelle grille
+        grille (liste 2D) : liste 2D de str représentant la grille actuelle
+        nouvelle_grille (liste 2D) : liste 2D de str représentant la nouvelle grille
 
     Returns:
         est_stable (boolean) : True si elles sont identiques et False sinon
@@ -571,18 +571,14 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
 
 
 if __name__ == "__main__":
-    g = charger_fichier("data/exemple_grille.csv")
+    g = charger_fichier("data/exemple_bonus.csv")
     dico_bonbon = {
         "0": "🍎",
         "1": "🍋",
-        "2": "🍌",
+        "2": "🥝",
         "3": "🍉",
         "4": "🍇",
-        "5": "🍓",
-        "6": "🍒",
-        "7": "🍍",
-        "8": "🥝",
-        "9": "🍐",
+        "5": "🍒",
         "r": "🎂",
     }
     dico_bonus = {"h": "-", "v": "|", "p": "+", "_": " "}
