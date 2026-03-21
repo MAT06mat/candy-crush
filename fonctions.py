@@ -92,19 +92,32 @@ def echanger_deux_bonbons(grille: liste_2d, pos_i, pos_f):
     grille[y_i][x_i], grille[y_f][x_f] = grille[y_f][x_f], grille[y_i][x_i]
 
 
-def afficher_grille(grille: liste_2d):
+def afficher_grille(grille: liste_2d, dico_bonbon: dict, dico_bonus: dict):
     """
     Réalise l'affichage dans le terminal de la liste 2D mis en paramètre.
 
     Params:
         grille (liste 2D) : liste 2D d'entiers
+        dico_bonbon (dictionnaire) : dictionnaire associant chaque type de bonbon à son icône correspondante
+        dico_bonus (dictionnaire) : dictionnaire associant chaque bonus à son caractère correspondant
 
     Returns:
+        None
 
     """
 
     for ligne in grille:
-        print(*ligne)
+        for bonbon in ligne:
+            type_bonbon = bonbon[0]
+            bonus_bonbon = bonbon[1]
+            print(
+                dico_bonus[bonus_bonbon]
+                + dico_bonbon[type_bonbon]
+                + dico_bonus[bonus_bonbon],
+                end=" ",
+            )
+        print()
+        print()
 
 
 def demander_mouvement():
@@ -559,4 +572,18 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
 
 if __name__ == "__main__":
     g = charger_fichier("data/exemple_grille.csv")
-    afficher_grille(g)
+    dico_bonbon = {
+        "0": "🍎",
+        "1": "🍋",
+        "2": "🍌",
+        "3": "🍉",
+        "4": "🍇",
+        "5": "🍓",
+        "6": "🍒",
+        "7": "🍍",
+        "8": "🥝",
+        "9": "🍐",
+        "r": "🎂",
+    }
+    dico_bonus = {"h": "-", "v": "|", "p": "+", "_": " "}
+    afficher_grille(g, dico_bonbon, dico_bonus)
