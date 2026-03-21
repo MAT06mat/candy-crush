@@ -1,6 +1,8 @@
 from random import choice
 from random import randint
-from copy import deepcopy
+
+
+liste_2d = list[list[str]]
 
 
 def charger_fichier(fichier: str) -> liste_2d:
