@@ -1,22 +1,25 @@
 import tkinter as tk
 from tkinter import Tk, ttk, PhotoImage
+from fonctions import *
+from time import sleep
 import math
-from fonctions import (
-    generer_grille,
-    echanger_deux_bonbons,
-    supprimer_bonbons_en_ligne,
-    jeu_est_bloque,
-)
 
-COLORS = ["#f15000", "#026edb", "#00d000", "#E3E300", "#be00ee", "#ee9700"]
-COLORS_OUTLINE = ["#5d1f00", "#002f60", "#005d00", "#5B5B00", "#450056", "#573700"]
 PX = 200
 PY = 120
 GAP = 4
 SIZE = 72
 
-COLOR_PATH = ["red", "blue", "green", "yellow", "purple", "orange"]
+COLOR_PATH = {
+    "0": "red",
+    "1": "blue",
+    "2": "green",
+    "3": "yellow",
+    "4": "purple",
+    "5": "orange",
+}
 TUILES_PATH = ["TL", "T", "TR", "L", "C", "R", "BL", "B", "BR"]
+
+DELAY = 0.3  # en sec
 
 
 class CandyCrush:
@@ -24,9 +27,10 @@ class CandyCrush:
         self.root = Tk()
         self.root.title("Candy Crush")
         self.frame = ttk.Frame(self.root, padding=10)
+        self.frame.root = self.root
 
         g = generer_grille(y, x, nb_bonbons)
-        Grille(self.frame, g, background)
+        Grille(self.frame, g, nb_bonbons, background)
 
         ttk.Button(self.frame, text="Click !!!!").pack()
 
@@ -37,9 +41,10 @@ class CandyCrush:
 
 
 class Grille:
-    def __init__(self, conteneur, grille, background):
+    def __init__(self, conteneur, grille, nb_bonbons, background):
         self.conteneur = conteneur
-        self.grille = grille
+        self.grille: liste_2d = grille
+        self.nb_bonbons = nb_bonbons
         self.bonbon_choisi = None  # None ou position sous forme (x, y)
         self.canvas = None
         self.assets_cache = {}
@@ -56,7 +61,7 @@ class Grille:
         """Chargement des différentes images"""
 
         # Chargement des bonbons
-        for color in COLOR_PATH:
+        for _, color in COLOR_PATH.items():
             for bonus in ["", "-h", "-v", "-p"]:
                 path = f"assets/candies/{color + bonus}.png"
                 self.get_asset(color + bonus, path)
@@ -114,7 +119,12 @@ class Grille:
             subsample_val = orig_size // common
 
             # Rajoute l'image au cache
-            self.assets_cache[index] = raw_image.zoom(zoom_val).subsample(subsample_val)
+            if subsample_val == zoom_val == 1:
+                self.assets_cache[index] = raw_image
+            else:
+                self.assets_cache[index] = raw_image.zoom(zoom_val).subsample(
+                    subsample_val
+                )
 
         return self.assets_cache[index]
 
@@ -161,7 +171,7 @@ class Grille:
                     x_pos - GAP / 2, y_pos - GAP / 2, image=tuile, anchor="nw"
                 )
 
-    def actualiser_bonbons(self):
+    def actualiser_bonbons(self, bind_events=True):
         """Dessine ou actualise les bonbons"""
 
         # Supprime tous les éléments qui ont le tag dynamic
@@ -181,29 +191,64 @@ class Grille:
         # Affiche les bonbons dans la grille
         for y in range(len(g)):
             for x in range(len(g[y])):
-                if g[y][x] == -1:
+                if g[y][x] == "__":
                     continue
 
                 x_pos = PX + (SIZE + GAP) * x
                 y_pos = PY + (SIZE + GAP) * y
 
-                bonbon_img = self.get_asset(COLOR_PATH[g[y][x]])
+                if g[y][x][1] in "vhp":
+                    img = self.get_asset(f"{COLOR_PATH[g[y][x][0]]}-{g[y][x][1]}")
+                elif g[y][x] == "r_":
+                    img = self.get_asset("rainbow")
+                else:
+                    img = self.get_asset(COLOR_PATH[g[y][x][0]])
+
                 bonbon = self.canvas.create_image(
-                    x_pos, y_pos, image=bonbon_img, anchor="nw", tags="dynamic"
+                    x_pos, y_pos, image=img, anchor="nw", tags="dynamic"
                 )
 
-                self.canvas.tag_bind(bonbon, "<Button-1>", self.create_callback(x, y))
+                if bind_events:
+                    self.canvas.tag_bind(
+                        bonbon, "<Button-1>", self.create_callback(x, y)
+                    )
+
+        self.conteneur.root.update()
+
+    def play_move(self, x: int, y: int):
+        echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
+        nouvelle_grille = supprimer_bonbons_en_ligne(
+            self.grille, self.bonbon_choisi, (x, y)
+        )
+
+        self.bonbon_choisi = None
+        self.actualiser_bonbons(bind_events=False)
+
+        stable = grille_est_stable(self.grille, nouvelle_grille)
+        while not stable:
+            self.grille = nouvelle_grille
+            sleep(DELAY)
+            self.actualiser_bonbons(bind_events=False)
+            sleep(DELAY)
+            appliquer_gravite(self.grille)
+            self.actualiser_bonbons(bind_events=False)
+            sleep(DELAY)
+            ajouter_bonbons_aleatoires(self.grille, self.nb_bonbons)
+            nouvelle_grille = supprimer_bonbons_en_ligne(self.grille)
+            stable = grille_est_stable(self.grille, nouvelle_grille)
+            if not stable:
+                self.actualiser_bonbons(bind_events=False)
+        self.actualiser_bonbons()
 
     def create_callback(self, x, y):
         def callback(e):
             if self.bonbon_choisi == (x, y):
                 self.bonbon_choisi = None
             elif self.bonbon_choisi:
-                echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
-                self.bonbon_choisi = None
+                self.play_move(x, y)
             else:
                 self.bonbon_choisi = (x, y)
-            self.grille = supprimer_bonbons_en_ligne(self.grille)
+
             if jeu_est_bloque(self.grille):
                 print("Le jeu est bloqué !")
             self.actualiser_bonbons()
@@ -212,5 +257,5 @@ class Grille:
 
 
 if __name__ == "__main__":
-    jeu = CandyCrush(background="forest")
+    jeu = CandyCrush(nb_bonbons=5, background="forest")
     jeu.main()
