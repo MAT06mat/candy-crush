@@ -2,6 +2,8 @@ from random import choice
 from random import randint
 from copy import deepcopy
 
+liste_2d = list[list[int]]
+
 
 def charger_grille(fichier: str):
     """
@@ -85,7 +87,7 @@ def echanger_deux_bonbons(grille, pos_i, pos_f):
     grille[y_i][x_i], grille[y_f][x_f] = grille[y_f][x_f], grille[y_i][x_i]
 
 
-def afficher_grille(grille):
+def afficher_grille(grille: liste_2d):
     """
     Réalise l'affichage dans le terminal de la liste 2D mis en paramètre.
 
@@ -97,7 +99,9 @@ def afficher_grille(grille):
     """
 
     for ligne in grille:
-        print(*ligne)
+        for i in ligne:
+            print(i, end=" ")
+        print()
 
 
 def supprimer_bonbons_en_ligne(grille: list[list[int]]) -> list[list[int]]:
