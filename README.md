@@ -71,3 +71,13 @@ Si bonbons supprimés :
 | ajouter_bonbons_aleatoires | Arthur                   | Oui     |
 
 Sous-tâches dans le fichier `fonctions.py`
+
+## Calcule de complexité de la fonction supprimer_bonbons_en_ligne
+
+Ligne 323-324 : On a dans une boucle conditionnelle une boucle for dans une autre. Complexité de la fonction : o(n) = n^2
+Ligne 340-341 : On observe une première boucle for dans une autre boucle for.
+Dans cette boucle for, Nous avons un ensemble de conditionel, qui renferme de nouvelles boucles for aux lignes : 369; 377; 385; 397; 405; 410. Comme chacune de ces boucles for sont situés dans des conditionnels dépendantes les unes des autres, On effectuera qu'une seule de ces boucles quand la fonction sera effectué. Complexité de la fonction : o(n) = n^3 + n^2
+Ligne 416-418-423 : On a rexpectivement une boucle while-for-for. Complexité de la fonction : o(n) = 2n^3 + n^2
+Ligne 433-438 : On a deux boucles for simples : Complexité de la fonction : o(n) = 2n^3 + n^2 + 2n
+Ligne 460-461 : On a une boucle for dans une autre. Complexité de la fonction : o(n) = 2n^3 + 2n^2 + 2n
+On a donc finalement une complexité de la fonction de 2n^3 car 2n^2 + 2n est négligeable devant 2n^3.

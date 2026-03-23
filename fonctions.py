@@ -441,6 +441,9 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
     return nouvelle_grille
 
 
+# complexité n^3
+
+
 def jeu_est_bloque(grille: liste_2d) -> bool:
     """
     Analyse la grille est renvoie True si grille bloquée, False sinon (non bloquée)
