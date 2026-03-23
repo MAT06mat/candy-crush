@@ -161,5 +161,47 @@ class AjouterBonbonsAleatoire(TestCase):
         self.assertFalse(erreur)
 
 
+class DupliquerGrille(TestCase):
+    def test_1(self):
+        grille_1 = [["1_", "2_", "3_"], ["4_", "5_", "6_"], ["7_", "8_", "9_"]]
+        grille_2 = dupliquer_grille(grille_1)
+        self.assertEqual(grille_1, grille_2)
+
+    def test_2(self):
+        grille_1 = [["11_", "12_", "13_"], ["14_", "15_", "16_"], ["17_", "18_", "19_"]]
+        grille_2 = dupliquer_grille(grille_1)
+        self.assertEqual(grille_1, grille_2)
+
+    def test_2(self):
+        grille_1 = []
+        grille_2 = dupliquer_grille(grille_1)
+        self.assertEqual(grille_1, grille_2)
+
+
+class GrilleEstStable(TestCase):
+    def test_1(self):
+        grille_1 = [["1_", "2_", "3_"], ["4_", "5_", "6_"], ["7_", "8_", "9_"]]
+        grille_2 = dupliquer_grille(grille_1)
+        self.assertEqual(grille_1, grille_2)
+
+    def test_2(self):
+        grille_1 = [["11_", "12_", "13_"], ["14_", "15_", "16_"], ["17_", "18_", "19_"]]
+        grille_2 = []
+        self.assertEqual(grille_1, grille_2)
+
+    def test_2(self):
+        grille_1 = []
+        grille_2 = []
+        self.assertEqual(grille_1, grille_2)
+
+
+class AppliquerGravite(TestCase):
+    def test_1(self):
+        grille_1 = [["1_", "2_", "3_"], ["4_", "__", "6_"], ["7_", "8_", "__"]]
+        grille_2 = [["1_", "__", "__"], ["4_", "2_", "3_"], ["7_", "8_", "6_"]]
+        appliquer_gravite(grille_1)
+        self.assertEqual(grille_1, grille_2)
+
+
 if __name__ == "__main__":
     main()
