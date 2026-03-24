@@ -276,10 +276,10 @@ def obtenir_alignement_vertical(grille, x, y):
 
 def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
     """
-    Supprime tous les bonbons formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
+    Supprime tous les bonbons dans une nouvelle grille, formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
     Supprime les bonbons par rapport à la grille de référence qui à été dupliqué.
     Retourne la nouvelle grille sans les bonbons formant des lignes (ils sont remplacés par des "__")
-    Retourne aussi un booléen indiquant si la grille à été modifiée.
+    Applique les interactions bonus entre les deux bonbons échangés, si les deux positions de ces bonbons sont mis en paramètre. Par exemple, si deux bonbons "v" ou "h" sont échangés, alors cela supprimera la ligne et la colonne de la position finale.
 
     Params:
         grille (liste 2D) : la grille d'origine
