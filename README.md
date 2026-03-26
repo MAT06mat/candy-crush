@@ -8,9 +8,11 @@
 > - Théo
 > - Arthur
 
-## Difficultée implémentée
+Lien du repo github avec le code source : [https://github.com/MAT06mat/candy-crush](https://github.com/MAT06mat/candy-crush)
 
-La difficultée implémentée est le niveau 1, cependant, nous avons ajoutés des bonus pour les bonbons :
+## Difficulté implémentée
+
+La difficulté implémentée est le niveau 1, cependant, nous avons ajouté des bonus pour les bonbons :
 
 Les bonbons rayés (h/v):
 
@@ -31,7 +33,7 @@ Pour la grille, nous avons choisi de la représenter par une liste 2D de strings
 
 - Le deuxième caractère donne le bonnus, "\_" si aucun
 
-- Les bonus sons : v - vertical / h - horizontal / p - explosif
+- Les bonus sont : v - vertical / h - horizontal / p - explosif
 
 Exemple :
 
@@ -89,20 +91,22 @@ Les sous-tâches sont dans le fichier `fonctions.py`.
 
 ## Les différents programmes
 
-En executant `terminal.py` vous pourrez voir le jeu dans le terminal, sans interface graphique. Avec `app.py`, le jeu se lancera avec une interface graphique à condition que tous les fichiers soient bien présents dans le dossier racine. En lançant `tests.py`, vous pourrez observer les tests sur les fonctions du fichier `fonctions.py`.
+En exécutant `terminal.py` vous pourrez voir le jeu dans le terminal, sans interface graphique. Avec `app.py`, le jeu se lancera avec une interface graphique à condition que tous les fichiers soient bien présents dans le dossier racine. En lançant `tests.py`, vous pourrez observer les tests sur les fonctions du fichier `fonctions.py`.
 
 ## Calcule de complexité de la fonction supprimer_bonbons_en_ligne
+
+Les lignes précisées par la suite font référence au fichier `fonction_calcul_complexite.py`, pour éviter de devoir systématiquement modifier le numéro des lignes quand une fonction est modifiée dans le fichier `fonctions.py`.
 
 Ligne 323-324 : On a dans une boucle conditionnelle une boucle for dans une autre. Complexité de la fonction : o(n) = n^2
 
 Ligne 340-341 : On observe une première boucle for dans une autre boucle for.
 
-Dans cette boucle for, Nous avons un ensemble de conditionel, qui renferme de nouvelles boucles for aux lignes : 369; 377; 385; 397; 405; 410. Comme chacune de ces boucles for sont situés dans des conditionnels dépendantes les unes des autres, On effectuera qu'une seule de ces boucles quand la fonction sera effectué. Complexité de la fonction : o(n) = n^3 + n^2
+Dans cette boucle for, Nous avons un ensemble de conditionnels, qui renferment de nouvelles boucles for aux lignes : 369; 377; 385; 397; 405; 410. Comme chacune de ces boucles for sont situés dans des conditionnelles dépendantes les unes des autres, on n'effectuera qu'une seule de ces boucles quand la fonction sera effectuée. Complexité de la fonction : o(n) = n^3 + n^2
 
-Ligne 416-418-423 : On a rexpectivement une boucle while-for-for. Complexité de la fonction : o(n) = 2n^3 + n^2
+Ligne 416-418-423 : On a respectivement une boucle while-for-for. Complexité de la fonction : o(n) = 2n^3 + n^2
 
 Ligne 433-438 : On a deux boucles for simples : Complexité de la fonction : o(n) = 2n^3 + n^2 + 2n
 
 Ligne 460-461 : On a une boucle for dans une autre. Complexité de la fonction : o(n) = 2n^3 + 2n^2 + 2n
 
-On a donc finalement une complexité de la fonction de 2n^3 car 2n^2 + 2n est négligeable devant 2n^3.
+On a donc finalement une complexité de la fonction de 2n^3 car 2n^2 + 2n est négligeable devant 2n^3. Soit o(2n^3).
