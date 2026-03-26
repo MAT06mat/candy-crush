@@ -207,6 +207,8 @@ def appliquer_gravite(grille: liste_2d):
 
 
 def obtenir_zone_speciale(grille, x, y, bonbon):
+    """Retourne la liste des coordonnées (x, y) des bonbons se trouvant dans une zonne spéciale."""
+
     zone_impactee = []
     hauteur = len(grille)
     largeur = len(grille[0])
@@ -228,6 +230,8 @@ def obtenir_zone_speciale(grille, x, y, bonbon):
 
 
 def obtenir_alignement_horizontal(grille, x, y):
+    """Retourne la liste des coordonnées (x, y) des bonbons alignés horizontalement."""
+
     # Cherche tous les bonbons identiques à gauche et à droite de (x, y)
     couleur = grille[y][x][0]
     alignement = [(x, y)]
@@ -251,6 +255,8 @@ def obtenir_alignement_horizontal(grille, x, y):
 
 
 def obtenir_alignement_vertical(grille, x, y):
+    """Retourne la liste des coordonnées (x, y) des bonbons alignés verticalement."""
+
     # Cherche tous les bonbons identiques en haut et en bas de (x, y)
     couleur = grille[y][x][0]
     alignement = [(x, y)]
@@ -274,6 +280,7 @@ def obtenir_alignement_vertical(grille, x, y):
     return alignement
 
 
+# complexité n^3
 def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
     """
     Supprime tous les bonbons dans une nouvelle grille, formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
@@ -291,7 +298,6 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
 
     """
     nouvelle_grille = dupliquer_grille(grille)
-
     hauteur = len(grille)
     largeur = len(grille[0])
     a_supprimer = set()
@@ -299,121 +305,143 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
     # par zone de suppression (clé: coordonnée, valeur: type de bonbon)
     bonus_potentiels = {}
 
-    colonnes_a_supprimer = set()
-    lignes_a_supprimer = set()
-
-    # Combinaison de bonus
+    # Gestion de combinaison de bonus
     if pos_i and pos_f:
         xi, yi = pos_i
         xf, yf = pos_f
+        b1, b2 = grille[yi][xi], grille[yf][xf]
 
-        if grille[yi][xi][1] in "vh" and grille[yf][xf][1] in "vh":
+        # Cas Arc-en-ciel + Arc-en-ciel : On vide toute la grille
+        if b1 == "r_" and b2 == "r_":
+            grille[yi][xi] = "__"
+            grille[yf][xf] = "__"
+
+            for y in range(hauteur):
+                for x in range(largeur):
+                    a_supprimer.add((x, y))
+
+        # Cas Arc-en-ciel + Autre bonbon
+        elif b1 == "r_" or b2 == "r_":
+            # On identifie lequel est l'arc-en-ciel et lequel est la cible
+            cible = b2 if b1 == "r_" else b1
+            couleur_cible = cible[0]
+            type_special_cible = cible[1] if len(cible) > 1 else "_"
+
             grille[yi][xi] = grille[yi][xi][0] + "_"
             grille[yf][xf] = grille[yf][xf][0] + "_"
 
-            # Supprimer ligne et colonne de la position finale
-            colonnes_a_supprimer.add(xf)
-            lignes_a_supprimer.add(yf)
+            a_supprimer.add((xi, yi))
+            a_supprimer.add((xf, yf))
 
-        elif grille[yi][xi][1] == "p" and grille[yf][xf][1] == "p":
+            for y in range(hauteur):
+                for x in range(largeur):
+                    if grille[y][x][0] == couleur_cible:
+                        # Si on échange r_ avec un bonus (v, h, p),
+                        # tous les bonbons de cette couleur deviennent ce bonus
+                        if type_special_cible in "vhp":
+                            grille[y][x] = couleur_cible + type_special_cible
+                        a_supprimer.add((x, y))
+
+        # Cas Rayé/Paquet + Rayé/Paquet (vh + vh, vh + p, p + p)
+        elif len(b1) > 1 and b1[1] in "vhp" and len(b2) > 1 and b2[1] in "vhp":
             grille[yi][xi] = grille[yi][xi][0] + "_"
             grille[yf][xf] = grille[yf][xf][0] + "_"
 
-            # Supprimer carré de 5x5 avec la position finale comme centre
-            for i in range(max(0, yf - 2), min(hauteur, yf + 3)):
-                for j in range(max(0, xf - 2), min(largeur, xf + 3)):
-                    a_supprimer.add((j, i))
+            a_supprimer.add((xi, yi))
+            a_supprimer.add((xf, yf))
 
-        elif grille[yi][xi][1] in "vhp" and grille[yf][xf][1] in "vhp":
-            grille[yi][xi] = grille[yi][xi][0] + "_"
-            grille[yf][xf] = grille[yf][xf][0] + "_"
+            # Combinaison vh + vh : Grande Croix (1 ligne + 1 colonne)
+            if b1[1] in "vh" and b2[1] in "vh":
+                for i in range(largeur):
+                    a_supprimer.add((i, yf))
+                for i in range(hauteur):
+                    a_supprimer.add((xf, i))
 
-            # Supprimer 3 lignes et 3 colonnes avec pour centre la position finale
-            colonnes_a_supprimer.add(xf - 1)
-            colonnes_a_supprimer.add(xf)
-            colonnes_a_supprimer.add(xf + 1)
-            lignes_a_supprimer.add(yf - 1)
-            lignes_a_supprimer.add(yf)
-            lignes_a_supprimer.add(yf + 1)
+            # Combinaison p + p : Explosion géante (5x5)
+            elif b1[1] == "p" and b2[1] == "p":
+                for i in range(max(0, yf - 2), min(hauteur, yf + 3)):
+                    for j in range(max(0, xf - 2), min(largeur, xf + 3)):
+                        a_supprimer.add((j, i))
+
+            # Combinaison vh + p : Triple Croix (3 lignes + 3 colonnes)
+            else:
+                grille[yi][xi] = grille[yi][xi][0] + "_"
+                grille[yf][xf] = grille[yf][xf][0] + "_"
+
+                for dy in [-1, 0, 1]:
+                    for i in range(largeur):
+                        if 0 <= yf + dy < hauteur:
+                            a_supprimer.add((i, yf + dy))
+                for dx in [-1, 0, 1]:
+                    for i in range(hauteur):
+                        if 0 <= xf + dx < largeur:
+                            a_supprimer.add((xf + dx, i))
 
     # Analyse des alignements verticaux et horizontaux
     for y in range(hauteur):
         for x in range(largeur):
-            couleur_actuelle = grille[y][x][0]
-            if couleur_actuelle == "_":
+            # On ignore les vides et les arc-en-ciel déjà là
+            if grille[y][x][0] in "_r":
                 continue
-
-            if y in lignes_a_supprimer:
-                a_supprimer.add((x, y))
-            elif x in colonnes_a_supprimer:
-                a_supprimer.add((x, y))
 
             h_match = obtenir_alignement_horizontal(grille, x, y)
             v_match = obtenir_alignement_vertical(grille, x, y)
-
             if not h_match and not v_match:
                 continue
 
             couleur = grille[y][x][0]
-            # La position où on va créer le bonus (priorité au clic de l'utilisateur)
-            pos_creation = (x, y)
-            if pos_f and (pos_f in h_match or pos_f in v_match):
-                pos_creation = pos_f
-            elif pos_i and (pos_i in h_match or pos_i in v_match):
-                pos_creation = pos_i
+            # Déterminer le point de création du bonus
+            pos_bonus = (x, y)
+            if pos_f in h_match or pos_f in v_match:
+                pos_bonus = pos_f
+            elif pos_i in h_match or pos_i in v_match:
+                pos_bonus = pos_i
 
-            # --- DETECTION DES FORMES ---
+            # Détection Arc-en-ciel (5 alignés)
+            if len(h_match) >= 5 or len(v_match) >= 5:
+                match = h_match if len(h_match) >= 5 else v_match
+                for c in match:
+                    a_supprimer.add(c)
+                    bonus_potentiels.pop(c, None)
+                # On place l'arc-en-ciel au milieu du match
+                if len(h_match) >= 5:
+                    bonus_potentiels[h_match[len(h_match) // 2]] = "r_"
+                else:
+                    bonus_potentiels[v_match[len(v_match) // 2]] = "r_"
 
-            if len(h_match) >= 5:
-                # Horizontal >= 5 -> Bonbon arc-en-ciel
-                for coord in h_match:
-                    a_supprimer.add(coord)
-                    bonus_potentiels.pop(coord, None)
-
-                bonus_potentiels[h_match[len(h_match) // 2]] = "r_"
-
-            elif len(v_match) >= 5:
-                # Vertical >= 5 -> Bonbon arc-en-ciel
-                for coord in v_match:
-                    a_supprimer.add(coord)
-                    bonus_potentiels.pop(coord, None)
-
-                bonus_potentiels[v_match[len(v_match) // 2]] = "r_"
-
-            # Intersection (T, L, +) : match horizontal ET vertical
+            # Détection Paquet (L ou T)
             elif h_match and v_match:
-                for coord in h_match + v_match:
-                    a_supprimer.add(coord)
-                    bonus_potentiels.pop(coord, None)
+                for c in h_match + v_match:
+                    a_supprimer.add(c)
+                    bonus_potentiels.pop(c, None)
+                bonus_potentiels[pos_bonus] = couleur + "p"
 
-                bonus_potentiels[(h_match[0][0], v_match[0][1])] = couleur + "p"
+            # Détection Rayé (4 alignés)
+            elif len(h_match) == 4:
+                # horizontal -> rayures verticales
+                if pos_bonus not in a_supprimer:
+                    bonus_potentiels[pos_bonus] = couleur + "v"
 
-            # Ligne de 4 ou plus
-            elif len(h_match) >= 4:
-                # Horizontal >= 4 -> Bonbon à rayures Verticales
-                if pos_creation not in a_supprimer:
-                    bonus_potentiels[pos_creation] = couleur + "v"
+                for c in h_match:
+                    a_supprimer.add(c)
 
-                for coord in h_match:
-                    a_supprimer.add(coord)
+            elif len(v_match) == 4:
+                # vertical -> rayures horizontales
+                if pos_bonus not in a_supprimer:
+                    bonus_potentiels[pos_bonus] = couleur + "h"
 
-            elif len(v_match) >= 4:
-                # Vertical >= 4 -> Bonbon à rayures Horizontales
-                if pos_creation not in a_supprimer:
-                    bonus_potentiels[pos_creation] = couleur + "h"
+                for c in v_match:
+                    a_supprimer.add(c)
 
-                for coord in v_match:
-                    a_supprimer.add(coord)
-
-            # Match de 3 simple
+            # Alignement de 3 standard
             else:
-                for coord in h_match + v_match:
-                    a_supprimer.add(coord)
+                for c in h_match + v_match:
+                    a_supprimer.add(c)
 
     # Gestion des réactions en chaîne
     deja_traites = set()
-    doit_analyser = True
-    while doit_analyser:
+    analyse_en_cours = True
+    while analyse_en_cours:
         nouveaux = set()
         for x, y in a_supprimer:
             if (x, y) not in deja_traites:
@@ -425,23 +453,19 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
                             nouveaux.add(c)
                 deja_traites.add((x, y))
 
-        if len(nouveaux) == 0:
-            doit_analyser = False
+        if not nouveaux:
+            analyse_en_cours = False
         else:
             a_supprimer.update(nouveaux)
 
     for x, y in a_supprimer:
         nouvelle_grille[y][x] = "__"
 
-    # On place les bonus. On vérifie que la position du bonus
-    # n'a pas été elle-même soufflée par une réaction en chaîne.
-    for pos, type_bonus in bonus_potentiels.items():
-        nouvelle_grille[pos[1]][pos[0]] = type_bonus
+    # Placement des nouveaux bonus (si la case n'est pas déjà marquée pour suppression)
+    for (px, py), type_b in bonus_potentiels.items():
+        nouvelle_grille[py][px] = type_b
 
     return nouvelle_grille
-
-
-# complexité n^3
 
 
 def jeu_est_bloque(grille: liste_2d) -> bool:
