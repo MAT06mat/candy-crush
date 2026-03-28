@@ -117,7 +117,8 @@ def afficher_grille(grille: liste_2d, dico_bonbon: dict, dico_bonus: dict):
                 end=" ",
             )
         print()
-        print()
+    print()
+    print()
 
 
 def demander_mouvement():

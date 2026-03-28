@@ -97,16 +97,12 @@ En exécutant `terminal.py` vous pourrez voir le jeu dans le terminal, sans inte
 
 Les lignes précisées par la suite font référence au fichier `fonction_calcul_complexite.py`, pour éviter de devoir systématiquement modifier le numéro des lignes quand une fonction est modifiée dans le fichier `fonctions.py`.
 
-Ligne 323-324 : On a dans une boucle conditionnelle une boucle for dans une autre. Complexité de la fonction : o(n) = n^2
+Lignes 39-40 / 56-57: On observe une série de conditionnelles dépendantes, qui exécute au pire 2 doubles boucles for. Complexité de la fonction : o(n) = 2n^2
 
-Ligne 340-341 : On observe une première boucle for dans une autre boucle for.
+Lignes 101-102 : Dans cette double boucle for, contenant des conditionnels, qui renferment au pire une boucle for. Comme chacune de ces boucles for sont situés dans des conditionnelles dépendantes les unes des autres, on n'effectuera qu'une seule de ces boucles quand la fonction sera effectuée. Complexité de la fonction : o(n) = n^3 + 2n^2
 
-Dans cette boucle for, Nous avons un ensemble de conditionnels, qui renferment de nouvelles boucles for aux lignes : 369; 377; 385; 397; 405; 410. Comme chacune de ces boucles for sont situés dans des conditionnelles dépendantes les unes des autres, on n'effectuera qu'une seule de ces boucles quand la fonction sera effectuée. Complexité de la fonction : o(n) = n^3 + n^2
+Ligne 164-166-171 : On a respectivement une boucle while-for-for. Complexité de la fonction : o(n) = 2n^3 + 2n^2
 
-Ligne 416-418-423 : On a respectivement une boucle while-for-for. Complexité de la fonction : o(n) = 2n^3 + n^2
-
-Ligne 433-438 : On a deux boucles for simples : Complexité de la fonction : o(n) = 2n^3 + n^2 + 2n
-
-Ligne 460-461 : On a une boucle for dans une autre. Complexité de la fonction : o(n) = 2n^3 + 2n^2 + 2n
+Ligne 181-185 : On a deux boucles for simples : Complexité de la fonction : o(n) = 2n^3 + 2n^2 + 2n
 
 On a donc finalement une complexité de la fonction de 2n^3 car 2n^2 + 2n est négligeable devant 2n^3. Soit o(2n^3).

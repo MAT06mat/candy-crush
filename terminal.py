@@ -14,14 +14,17 @@ dico_bonbon = {
 dico_bonus = {"h": "-", "v": "|", "p": "+", "_": " "}
 f.afficher_grille(grille, dico_bonbon, dico_bonus)
 nombre_coups = 30
-while f.jeu_est_bloque(grille) == False and nombre_coups > 0:
-    grille_ancienne = f.dupliquer_grille(grille)
+while nombre_coups > 0 and not f.jeu_est_bloque(grille):
+    # Gestion du déplacement
     deplacement = f.demander_mouvement()
     f.echanger_deux_bonbons(grille, deplacement[0], deplacement[1])
     f.afficher_grille(grille, dico_bonbon, dico_bonus)
     nombre_coups -= 1
-    grille = f.calculer_nouvelle_grille(grille, len(dico_bonbon))
-    f.afficher_grille(grille, dico_bonbon, dico_bonus)
-    while not f.grille_est_stable(grille, grille_ancienne):
-        grille = f.calculer_nouvelle_grille(grille, len(dico_bonbon))
-        f.afficher_grille(grille, dico_bonbon, dico_bonus)
+    # Résolution de la grille
+    grille_stable = False
+    while not grille_stable:
+        grille_ancienne = f.dupliquer_grille(grille)
+        grille = f.calculer_nouvelle_grille(grille, len(dico_bonbon) - 1)
+        grille_stable = f.grille_est_stable(grille, grille_ancienne)
+        if not grille_stable:
+            f.afficher_grille(grille, dico_bonbon, dico_bonus)
