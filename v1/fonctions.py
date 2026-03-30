@@ -1,5 +1,6 @@
 from random import choice
 from random import randint
+from matplotlib import pyplot as plt
 
 
 liste_2d = list[list[int]]
@@ -90,12 +91,14 @@ def echanger_deux_bonbons(grille: liste_2d, pos_i, pos_f):
     grille[y_i][x_i], grille[y_f][x_f] = grille[y_f][x_f], grille[y_i][x_i]
 
 
-def afficher_grille(grille: liste_2d, dico_bonbon: dict):
+def afficher_grille(grille: liste_2d, nb_type_bonbons: int):
     """
-    Réalise l'affichage dans le terminal de la liste 2D mis en paramètre.
+     Affiche la grille de jeu "grille" contenant au maximum nb_type_bonbons (
+    entier) couleurs de bonbons différentes. Les bonbons sont codés entre
+    et nb_type_bonbons-1.
 
     Params:
-        grille (liste 2D) : liste 2D d'entiers
+        grille (liste 2D) : liste 2D de str
         dico_bonbon (dictionnaire) : dictionnaire associant chaque type de bonbon à son icône correspondante
         dico_bonus (dictionnaire) : dictionnaire associant chaque bonus à son caractère correspondant
 
@@ -106,7 +109,14 @@ def afficher_grille(grille: liste_2d, dico_bonbon: dict):
 
     for ligne in grille:
         for bonbon in ligne:
-            print(dico_bonbon[bonbon], end=" ")
+            type_bonbon = bonbon[0]
+            bonus_bonbon = bonbon[1]
+            print(
+                dico_bonus[bonus_bonbon]
+                + dico_bonbon[type_bonbon]
+                + dico_bonus[bonus_bonbon],
+                end=" ",
+            )
         print()
     print()
     print()
