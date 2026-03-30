@@ -107,9 +107,9 @@ def afficher_grille(grille: liste_2d, nb_type_bonbons: int):
     """
 
     plt.imshow(grille, vmin=0, vmax=nb_type_bonbons)
-    plt.pause(1)
+    plt.pause(0.1)
     plt.draw()
-    plt.pause(1)
+    plt.pause(0.1)
 
 
 def demander_mouvement():
@@ -412,13 +412,8 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
 
 
 if __name__ == "__main__":
-    g = charger_fichier("data/exemple_bonus.csv")
-    dico_bonbon = {
-        0: "🍎",
-        1: "🍋",
-        2: "🥝",
-        3: "🍉",
-        4: "🍇",
-        5: "🍒",
-    }
-    afficher_grille(g, dico_bonbon)
+    g = charger_fichier("data/exemple_grille.csv")
+
+    nb_type_bonbons = 6
+    afficher_grille(g, nb_type_bonbons)
+    input()
