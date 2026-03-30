@@ -93,7 +93,7 @@ def echanger_deux_bonbons(grille: liste_2d, pos_i, pos_f):
 
 def afficher_grille(grille: liste_2d, nb_type_bonbons: int):
     """
-     Affiche la grille de jeu "grille" contenant au maximum nb_type_bonbons (
+    Affiche la grille de jeu "grille" contenant au maximum nb_type_bonbons (
     entier) couleurs de bonbons différentes. Les bonbons sont codés entre
     et nb_type_bonbons-1.
 
