@@ -95,7 +95,7 @@ En exécutant `terminal.py` vous pourrez voir le jeu dans le terminal, sans inte
 
 ## Tests
 
-Pour les tests, nous avons utilisé la librairie built-in [unittest](https://docs.python.org/fr/3/library/unittest.html) qui permet de lancer les tests à notre place sans devoir appeler une à une les fonctions. Celle-ci se trouvent dans `tests/tests.py`. Voici un exemple d'utilisation de `unittest`:
+Pour les tests, nous avons utilisé la librairie built-in [unittest](https://docs.python.org/fr/3/library/unittest.html) qui permet de lancer les tests à notre place sans devoir appeler une à une les fonctions. Celle-ci se trouvent dans `tests.py`. Voici un exemple d'utilisation de `unittest`:
 
 ```py
 from unittest import TestCase, main
