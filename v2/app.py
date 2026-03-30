@@ -50,7 +50,7 @@ class Grille:
         self.assets_cache = {}
 
         # Chargement des images (d'abord le fond puis les bonbons et la grille)
-        self.charger_background(f"assets/backgrounds/{background}.png")
+        self.charger_background(f"v2/assets/backgrounds/{background}.png")
         self.charger_assets()
 
         # Initialise et affiche la grille
@@ -63,16 +63,16 @@ class Grille:
         # Chargement des bonbons
         for _, color in COLOR_PATH.items():
             for bonus in ["", "-h", "-v", "-p"]:
-                path = f"assets/candies/{color + bonus}.png"
+                path = f"v2/assets/candies/{color + bonus}.png"
                 self.get_asset(color + bonus, path)
-        self.get_asset("rainbow", "assets/candies/rainbow.png")
+        self.get_asset("rainbow", "v2/assets/candies/rainbow.png")
 
         # Chargement des tuiles pour la grille
         for tuile in TUILES_PATH:
-            self.get_asset(tuile, f"assets/grid/{tuile}.png", size=SIZE + GAP)
+            self.get_asset(tuile, f"v2/assets/grid/{tuile}.png", size=SIZE + GAP)
 
         # Chargement du selecteur de bonbon
-        self.get_asset("selected", "assets/selected.png", SIZE + 2 * GAP)
+        self.get_asset("selected", "v2/assets/selected.png", SIZE + 2 * GAP)
 
     def charger_background(self, path):
         """Charge et redimensionne le fond aux dimensions de la grille"""
@@ -220,6 +220,15 @@ class Grille:
         nouvelle_grille = supprimer_bonbons_en_ligne(
             self.grille, self.bonbon_choisi, (x, y)
         )
+
+        x2, y2 = self.bonbon_choisi
+        if abs(x2 - x) + abs(y2 - y) != 1:
+            echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
+            return
+
+        if grille_est_stable(self.grille, nouvelle_grille):
+            echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
+            return
 
         self.bonbon_choisi = None
         self.actualiser_bonbons(bind_events=False)
