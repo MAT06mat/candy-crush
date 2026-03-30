@@ -98,28 +98,18 @@ def afficher_grille(grille: liste_2d, nb_type_bonbons: int):
     et nb_type_bonbons-1.
 
     Params:
-        grille (liste 2D) : liste 2D de str
-        dico_bonbon (dictionnaire) : dictionnaire associant chaque type de bonbon à son icône correspondante
-        dico_bonus (dictionnaire) : dictionnaire associant chaque bonus à son caractère correspondant
+        grille (liste 2D) : liste 2D de int
+        nb_type_bonbons (int) : nombre de types de bonbons possibles
 
     Returns:
         None
 
     """
 
-    for ligne in grille:
-        for bonbon in ligne:
-            type_bonbon = bonbon[0]
-            bonus_bonbon = bonbon[1]
-            print(
-                dico_bonus[bonus_bonbon]
-                + dico_bonbon[type_bonbon]
-                + dico_bonus[bonus_bonbon],
-                end=" ",
-            )
-        print()
-    print()
-    print()
+    plt.imshow(grille, vmin=0, vmax=nb_type_bonbons)
+    plt.pause(1)
+    plt.draw()
+    plt.pause(1)
 
 
 def demander_mouvement():
