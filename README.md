@@ -93,6 +93,37 @@ Les sous-tâches sont dans le fichier `fonctions.py`.
 
 En exécutant `terminal.py` vous pourrez voir le jeu dans le terminal, sans interface graphique. Avec `app.py`, le jeu se lancera avec une interface graphique à condition que tous les fichiers soient bien présents dans le dossier racine. En lançant `tests.py`, vous pourrez observer les tests sur les fonctions du fichier `fonctions.py`.
 
+## Tests
+
+Pour les tests, nous avons utilisé la librairie built-in [unittest](https://docs.python.org/fr/3/library/unittest.html) qui permet de lancer les tests à notre place sans devoir appeler une à une les fonctions. Celle-ci se trouvent dans `tests/tests.py`. Voici un exemple d'utilisation de `unittest`:
+
+```py
+from unittest import TestCase, main
+from exemple import ajouter
+
+
+# Définition de la classe pour faire des tests sur une fonction
+class Ajouter(TestCase):
+    # Définition du cas numéro 1 : ajouter 1
+    def test_premier_cas_sur_cette_fonction(self):
+        a = 1
+        b = ajouter(a, 1)
+        self.assertEqual(a + 1, b) # S'assure que (a + 1) == b sinon, fait une erreur
+
+    def test_cas_2(self):
+        ...
+
+    def test_cas_2(self):
+        ...
+
+
+# Lance tous les tests se trouvant dans les fonctions des classes au dessus de cette ligne
+# Créé également automatiquement des erreurs si les tests ne sont pas bon
+main()
+```
+
+Les fonctions se trouvents dans `fonctions.py` et les tests dans `test/test.py`
+
 ## Calcule de complexité de la fonction supprimer_bonbons_en_ligne
 
 Les lignes précisées par la suite font référence au fichier `fonction_calcul_complexite.py`, pour éviter de devoir systématiquement modifier le numéro des lignes quand une fonction est modifiée dans le fichier `fonctions.py`.
