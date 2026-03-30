@@ -122,7 +122,7 @@ class Ajouter(TestCase):
 main()
 ```
 
-Les fonctions se trouvents dans `fonctions.py` et les tests dans `test/test.py`
+Les fonctions se trouvents dans `fonctions.py` et les tests dans `test.py`
 
 ## Calcule de complexité de la fonction supprimer_bonbons_en_ligne
 
