@@ -106,7 +106,7 @@ def afficher_grille(grille: liste_2d, nb_type_bonbons: int):
 
     """
 
-    plt.imshow(grille, vmin=0, vmax=nb_type_bonbons)
+    plt.imshow(grille, vmin=0, vmax=nb_type_bonbons - 1, cmap="jet")
     plt.pause(0.1)
     plt.draw()
     plt.pause(0.1)
