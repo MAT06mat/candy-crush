@@ -249,6 +249,11 @@ def obtenir_alignement_vertical(grille, x, y):
     return alignement
 
 
+def test_bonbon_alignee(grille: liste_2d):
+    nouvelle_grille = supprimer_bonbons_en_ligne(grille)
+    return not grille_est_stable(grille, nouvelle_grille)
+
+
 # complexité n^3
 def supprimer_bonbons_en_ligne(grille: liste_2d):
     """
@@ -277,7 +282,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
                 continue
 
             for c in h_match + v_match:
-                nouvelle_grille[c[1]][x[0]] = -1
+                nouvelle_grille[c[1]][c[0]] = -1
 
     return nouvelle_grille
 
