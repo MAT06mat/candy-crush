@@ -4,8 +4,6 @@ from fonctions import *
 import math
 
 # --- Configuration Visuelle ---
-PX = 200
-PY = 120
 GAP = 4
 SIZE = 72
 
@@ -40,17 +38,22 @@ class CandyCrush:
             nb_bonbons (int): Nombre de couleurs différentes.
             background (str): Nom du fichier image pour le fond.
         """
+
+        self.width = 1520
+        self.height = 780
+
         self.root = Tk()
         self.root.title("Candy Crush")
-        self.root.geometry("1520x780+0+0")
-        self.root.state("zoomed")
-
-        # On récupère les dimensions de l'écran pour le centrage
-        self.screen_w = self.root.winfo_screenwidth()
-        self.screen_h = self.root.winfo_screenheight()
+        self.root.geometry(f"{self.width}x{self.height}+0+0")
+        self.root.minsize(1200, 675)
+        self.root.maxsize(1920, 1080)
+        # self.root.state("zoomed")
+        self.root.bind("<Configure>", self.on_configure)
 
         # Canvas principal qui occupe toute la fenêtre
-        self.canvas = tk.Canvas(self.root, width=self.screen_w, height=self.screen_h)
+        self.canvas = tk.Canvas(
+            self.root, width=self.width, height=self.height, highlightthickness=0
+        )
         self.canvas.pack(fill="both", expand=True)
 
         # Chargement du fond directement sur le canvas
@@ -60,8 +63,18 @@ class CandyCrush:
         # Génération des données et création de la vue
         grille_donnees = generer_grille(hauteur, largeur, nb_bonbons)
         self.grille_view = Grille(
-            self.canvas, grille_donnees, nb_bonbons, sw=self.screen_w, sh=self.screen_h
+            self.canvas, grille_donnees, nb_bonbons, sw=self.width, sh=self.height
         )
+
+    def on_configure(self, event):
+        if not isinstance(event.widget, tk.Tk):
+            return
+
+        self.width = event.width
+        self.height = event.height
+        self.grille_view.calcul_padding(self.width, self.height)
+        self.canvas.config(width=self.width, height=self.height)
+        self.grille_view.recharger_composant()
 
     def main(self):
         """Lance la boucle principale de Tkinter."""
@@ -73,7 +86,7 @@ class Grille:
     Gère l'affichage graphique de la grille, les animations et les interactions utilisateur.
     """
 
-    def __init__(self, canvas, grille, nb_bonbons, sw, sh):
+    def __init__(self, canvas: tk.Canvas, grille, nb_bonbons, sw, sh):
         """
         Initialise le moteur graphique du plateau de jeu.
 
@@ -89,18 +102,30 @@ class Grille:
         self.grille = grille
         self.nb_bonbons = nb_bonbons
 
-        # Calcul dynamique du padding pour centrer la grille
-        grid_width = len(grille[0]) * (SIZE + GAP)
-        grid_height = len(grille) * (SIZE + GAP)
-        self.px = (sw - grid_width) // 2
-        self.py = (sh - grid_height) // 2
-
         self.bonbon_choisi = None  # Stocke (x, y) du premier bonbon cliqué
         self.assets_cache = {}  # Cache pour éviter de recharger les images
         self.items = {}  # Dictionnaire {(x, y): canvas_id}
         self.is_animating = False
 
+        # Calcul dynamique du padding pour centrer la grille
+        self.calcul_padding(sw, sh)
+
+        # Chargement de toutes les images et de l'interface
         self.charger_assets()
+        self.dessiner_plateau()
+        self.initialiser_bonbons()
+        self.ajouter_interface()
+
+    def calcul_padding(self, w, h):
+        """Calcul du padding pour centrer la grille"""
+        grid_width = len(self.grille[0]) * (SIZE + GAP)
+        grid_height = len(self.grille) * (SIZE + GAP)
+        self.px = (w - grid_width) // 2
+        self.py = (h - grid_height) // 2
+
+    def recharger_composant(self):
+        """Recharge tous les elements du canvas sauf le bg"""
+        self.canvas.delete("dynamic")
         self.dessiner_plateau()
         self.initialiser_bonbons()
         self.ajouter_interface()
@@ -116,11 +141,14 @@ class Grille:
             text="CANDY CRUSH",
             font=("Helvetica", 36, "bold"),
             fill="white",
+            tags="dynamic",
         )
 
         # Ajout d'un bouton Tkinter via create_window
         btn_quitter = ttk.Button(self.root, text="Quitter", command=self.root.destroy)
-        self.canvas.create_window(self.px - 100, self.py, window=btn_quitter)
+        self.canvas.create_window(
+            self.px - 100, self.py, window=btn_quitter, tags="dynamic"
+        )
 
     def charger_assets(self):
         """Charge toutes les images nécessaires (bonbons, bonus, tuiles) dans le cache."""
@@ -154,7 +182,11 @@ class Grille:
 
                 img_tuile = self.get_asset(tuile_type if tuile_type else "C")
                 self.canvas.create_image(
-                    px_item - GAP / 2, py_item - GAP / 2, image=img_tuile, anchor="nw"
+                    px_item - GAP / 2,
+                    py_item - GAP / 2,
+                    image=img_tuile,
+                    anchor="nw",
+                    tags="dynamic",
                 )
 
     def initialiser_bonbons(self):
@@ -194,7 +226,9 @@ class Grille:
         px, py = self.get_pixel_pos(x, y)
         img = self.get_candy_image(val)
 
-        item_id = self.canvas.create_image(px, py, image=img, anchor="nw")
+        item_id = self.canvas.create_image(
+            px, py, image=img, anchor="nw", tags="dynamic"
+        )
         self.items[(x, y)] = item_id
         # Liaison de l'événement clic
         self.canvas.tag_bind(item_id, "<Button-1>", self.create_callback(x, y))
@@ -395,6 +429,7 @@ class Grille:
                         py_start,
                         image=self.get_candy_image(self.grille[y][x]),
                         anchor="nw",
+                        tags="dynamic",
                     )
                     self.items[(x, y)] = item_id
                     movements.append([item_id, 0, (py_final - py_start) / STEPS])
@@ -414,7 +449,7 @@ class Grille:
                 py - GAP,
                 image=self.get_asset("selected"),
                 anchor="nw",
-                tags="selector",
+                tags="selector dynamic",
             )
 
     def actualiser_bindings(self):
