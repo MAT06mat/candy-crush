@@ -1,14 +1,15 @@
 import tkinter as tk
 from tkinter import Tk, ttk, PhotoImage
 from fonctions import *
-from time import sleep
 import math
 
+# --- Configuration Visuelle ---
 PX = 200
 PY = 120
 GAP = 4
 SIZE = 72
 
+# --- Paramètres Techniques ---
 COLOR_PATH = {
     "0": "red",
     "1": "blue",
@@ -19,140 +20,127 @@ COLOR_PATH = {
 }
 TUILES_PATH = ["TL", "T", "TR", "L", "C", "R", "BL", "B", "BR"]
 
-DELAY = 0.3  # en sec
+# --- Paramètres d'Animation ---
+ANIM_SPEED = 15  # Vitesse de rafraîchissement (ms)
+STEPS = 10  # Nombre d'étapes pour décomposer un mouvement
 
 
 class CandyCrush:
-    def __init__(self, x=7, y=6, nb_bonbons=6, background="forest"):
+    """
+    Classe principale gérant la fenêtre du jeu et l'initialisation globale.
+    """
+
+    def __init__(self, largeur=7, hauteur=6, nb_bonbons=6, background="background"):
+        """
+        Configure l'interface utilisateur et lance la génération de la grille.
+
+        Args:
+            largeur (int): Nombre de colonnes.
+            hauteur (int): Nombre de lignes.
+            nb_bonbons (int): Nombre de couleurs différentes.
+            background (str): Nom du fichier image pour le fond.
+        """
         self.root = Tk()
         self.root.title("Candy Crush")
-        self.frame = ttk.Frame(self.root, padding=10)
-        self.frame.root = self.root
+        self.root.geometry("1520x780+0+0")
+        self.root.state("zoomed")
 
-        g = generer_grille(y, x, nb_bonbons)
-        Grille(self.frame, g, nb_bonbons, background)
+        # On récupère les dimensions de l'écran pour le centrage
+        self.screen_w = self.root.winfo_screenwidth()
+        self.screen_h = self.root.winfo_screenheight()
 
-        ttk.Button(self.frame, text="Click !!!!").pack()
+        # Canvas principal qui occupe toute la fenêtre
+        self.canvas = tk.Canvas(self.root, width=self.screen_w, height=self.screen_h)
+        self.canvas.pack(fill="both", expand=True)
 
-        self.frame.pack()
+        # Chargement du fond directement sur le canvas
+        self.bg_img = PhotoImage(file=f"v2/assets/backgrounds/{background}.png")
+        self.canvas.create_image(0, 0, image=self.bg_img, anchor="nw")
+
+        # Génération des données et création de la vue
+        grille_donnees = generer_grille(hauteur, largeur, nb_bonbons)
+        self.grille_view = Grille(
+            self.canvas, grille_donnees, nb_bonbons, sw=self.screen_w, sh=self.screen_h
+        )
 
     def main(self):
+        """Lance la boucle principale de Tkinter."""
         self.root.mainloop()
 
 
 class Grille:
-    def __init__(self, conteneur, grille, nb_bonbons, background):
-        self.conteneur = conteneur
-        self.grille: liste_2d = grille
+    """
+    Gère l'affichage graphique de la grille, les animations et les interactions utilisateur.
+    """
+
+    def __init__(self, canvas, grille, nb_bonbons, sw, sh):
+        """
+        Initialise le moteur graphique du plateau de jeu.
+
+        Args:
+            canvas (Canvas): Le parent Tkinter.
+            grille (list): Liste 2D représentant les bonbons.
+            nb_bonbons (int): Nombre de types de bonbons.
+            sw (int): Largeur de la fenêtre
+            sh (int): Hauteur de la fenêtre
+        """
+        self.canvas = canvas
+        self.root = canvas.winfo_toplevel()
+        self.grille = grille
         self.nb_bonbons = nb_bonbons
-        self.bonbon_choisi = None  # None ou position sous forme (x, y)
-        self.canvas = None
-        self.assets_cache = {}
 
-        # Chargement des images (d'abord le fond puis les bonbons et la grille)
-        self.charger_background(f"v2/assets/backgrounds/{background}.png")
+        # Calcul dynamique du padding pour centrer la grille
+        grid_width = len(grille[0]) * (SIZE + GAP)
+        grid_height = len(grille) * (SIZE + GAP)
+        self.px = (sw - grid_width) // 2
+        self.py = (sh - grid_height) // 2
+
+        self.bonbon_choisi = None  # Stocke (x, y) du premier bonbon cliqué
+        self.assets_cache = {}  # Cache pour éviter de recharger les images
+        self.items = {}  # Dictionnaire {(x, y): canvas_id}
+        self.is_animating = False
+
         self.charger_assets()
+        self.dessiner_plateau()
+        self.initialiser_bonbons()
+        self.ajouter_interface()
 
-        # Initialise et affiche la grille
-        self.initialiser_canvas()
-        self.actualiser_bonbons()
+    def ajouter_interface(self):
+        """
+        Ajoute des éléments UI (boutons, texte) par-dessus le fond.
+        """
+        # Ajout d'un titre textuel
+        self.canvas.create_text(
+            self.px + (len(self.grille[0]) * (SIZE + GAP)) // 2,
+            self.py - 50,
+            text="CANDY CRUSH",
+            font=("Helvetica", 36, "bold"),
+            fill="white",
+        )
+
+        # Ajout d'un bouton Tkinter via create_window
+        btn_quitter = ttk.Button(self.root, text="Quitter", command=self.root.destroy)
+        self.canvas.create_window(self.px - 100, self.py, window=btn_quitter)
 
     def charger_assets(self):
-        """Chargement des différentes images"""
-
-        # Chargement des bonbons
+        """Charge toutes les images nécessaires (bonbons, bonus, tuiles) dans le cache."""
         for _, color in COLOR_PATH.items():
             for bonus in ["", "-h", "-v", "-p"]:
                 path = f"v2/assets/candies/{color + bonus}.png"
                 self.get_asset(color + bonus, path)
+
         self.get_asset("rainbow", "v2/assets/candies/rainbow.png")
 
-        # Chargement des tuiles pour la grille
         for tuile in TUILES_PATH:
             self.get_asset(tuile, f"v2/assets/grid/{tuile}.png", size=SIZE + GAP)
 
-        # Chargement du selecteur de bonbon
         self.get_asset("selected", "v2/assets/selected.png", SIZE + 2 * GAP)
 
-    def charger_background(self, path):
-        """Charge et redimensionne le fond aux dimensions de la grille"""
-
-        self.bg_image = None
-        try:
-            # Load the original large image
-            raw_bg = PhotoImage(file=path)
-            orig_w = raw_bg.width()
-            orig_h = raw_bg.height()
-
-            # Target canvas dimensions
-            w_g, h_g = len(self.grille[0]), len(self.grille)
-            target_w = 2 * PX - GAP + (GAP + SIZE) * w_g
-            target_h = 2 * PY - GAP + (GAP + SIZE) * h_g
-
-            # Calculate the subsample factor
-            # We use integer division to find how many times the target fits in the original
-            ratio_w = orig_w // target_w
-            ratio_h = orig_h // target_h
-
-            # We take the smaller ratio to ensure the image covers the canvas
-            # (it will be slightly larger or equal, but never smaller)
-            factor = max(1, min(ratio_w, ratio_h))
-
-            # Only subsample, no zoom to avoid memory crash
-            if factor > 1:
-                self.bg_image = raw_bg.subsample(factor)
-            else:
-                self.bg_image = raw_bg
-        except Exception as e:
-            print(f"Erreur chargement background: {e}")
-
-    def get_asset(self, index, file=None, size=SIZE):
-        """Retourne l'image redimensionné, ou créé l'image pour la mettre dans le cache si elle n'y est pas déjà"""
-
-        if index not in self.assets_cache and file:
-            raw_image = PhotoImage(file=file)
-
-            # Cette opération est très lourde, mais n'est fait qu'une seule fois au démarrage de l'app
-            orig_size = raw_image.width()
-            common = math.gcd(orig_size, size)
-            zoom_val = size // common
-            subsample_val = orig_size // common
-
-            # Rajoute l'image au cache
-            if subsample_val == zoom_val == 1:
-                self.assets_cache[index] = raw_image
-            else:
-                self.assets_cache[index] = raw_image.zoom(zoom_val).subsample(
-                    subsample_val
-                )
-
-        return self.assets_cache[index]
-
-    def initialiser_canvas(self):
-        """Créé le canvas et dessiner le fond et la grille"""
-
-        # Calcule la largeur et la hauteur du canvas
-        w_g, h_g = len(self.grille[0]), len(self.grille)
-        w_canvas = 2 * PX - GAP + (GAP + SIZE) * w_g - 4
-        h_canvas = 2 * PY - GAP + (GAP + SIZE) * h_g - 4
-
-        # Créé le canvas
-        self.canvas = tk.Canvas(self.conteneur, width=w_canvas, height=h_canvas)
-        self.canvas.pack()
-
-        # Dessine le background
-        if self.bg_image:
-            offset_x = (self.bg_image.width() - w_canvas) // 2
-            offset_y = (self.bg_image.height() - h_canvas) // 2
-            self.canvas.create_image(
-                -offset_x, -offset_y, image=self.bg_image, anchor="nw"
-            )
-
-        # Dessine la grille
+    def dessiner_plateau(self):
+        """Dessine les tuiles de la grille en utilisant les offsets px et py."""
         for y in range(len(self.grille)):
             for x in range(len(self.grille[y])):
-                x_pos = PX + (SIZE + GAP) * x
-                y_pos = PY + (SIZE + GAP) * y
+                px_item, py_item = self.get_pixel_pos(x, y)
 
                 tuile_type = ""
                 if y == 0:
@@ -163,108 +151,295 @@ class Grille:
                     tuile_type += "L"
                 elif x == len(self.grille[0]) - 1:
                     tuile_type += "R"
-                if tuile_type == "":
-                    tuile_type = "C"
 
-                tuile = self.get_asset(tuile_type)
+                img_tuile = self.get_asset(tuile_type if tuile_type else "C")
                 self.canvas.create_image(
-                    x_pos - GAP / 2, y_pos - GAP / 2, image=tuile, anchor="nw"
+                    px_item - GAP / 2, py_item - GAP / 2, image=img_tuile, anchor="nw"
                 )
 
-    def actualiser_bonbons(self, bind_events=True):
-        """Dessine ou actualise les bonbons"""
+    def initialiser_bonbons(self):
+        """Remplit le plateau avec les bonbons initiaux."""
+        for y in range(len(self.grille)):
+            for x in range(len(self.grille[y])):
+                self.creer_bonbon_item(x, y)
 
-        # Supprime tous les éléments qui ont le tag dynamic
-        self.canvas.delete("dynamic")
+    def get_asset(self, index, file=None, size=SIZE):
+        """
+        Récupère une image redimensionnée ou la crée si elle n'existe pas.
 
-        g = self.grille
-
-        # Affiche le selecteur de bonbon autour du bonbon choisi
-        if self.bonbon_choisi:
-            x_sel = PX - GAP + (SIZE + GAP) * self.bonbon_choisi[0]
-            y_sel = PY - GAP + (SIZE + GAP) * self.bonbon_choisi[1]
-            sel_img = self.get_asset("selected")
-            self.canvas.create_image(
-                x_sel, y_sel, image=sel_img, anchor="nw", tags="dynamic"
+        Args:
+            index (str): Identifiant unique de l'image.
+            file (str): Chemin du fichier (si création).
+            size (int): Taille cible en pixels.
+        """
+        if index not in self.assets_cache and file:
+            raw = PhotoImage(file=file)
+            # Calcul du ratio pour un redimensionnement propre via zoom/subsample
+            diviseur_commun = math.gcd(raw.width(), size)
+            self.assets_cache[index] = raw.zoom(size // diviseur_commun).subsample(
+                raw.width() // diviseur_commun
             )
+        return self.assets_cache[index]
 
-        # Affiche les bonbons dans la grille
-        for y in range(len(g)):
-            for x in range(len(g[y])):
-                if g[y][x] == "__":
-                    continue
+    def get_pixel_pos(self, x, y):
+        """Convertit les coordonnées de la grille (x, y) en position pixels (px, py)."""
+        return self.px + (SIZE + GAP) * x, self.py + (SIZE + GAP) * y
 
-                x_pos = PX + (SIZE + GAP) * x
-                y_pos = PY + (SIZE + GAP) * y
+    def creer_bonbon_item(self, x, y):
+        """Crée l'objet graphique du bonbon sur le canvas."""
+        val = self.grille[y][x]
+        if val == "__":
+            return
 
-                if g[y][x][1] in "vhp":
-                    img = self.get_asset(f"{COLOR_PATH[g[y][x][0]]}-{g[y][x][1]}")
-                elif g[y][x] == "r_":
-                    img = self.get_asset("rainbow")
-                else:
-                    img = self.get_asset(COLOR_PATH[g[y][x][0]])
+        px, py = self.get_pixel_pos(x, y)
+        img = self.get_candy_image(val)
 
-                bonbon = self.canvas.create_image(
-                    x_pos, y_pos, image=img, anchor="nw", tags="dynamic"
-                )
+        item_id = self.canvas.create_image(px, py, image=img, anchor="nw")
+        self.items[(x, y)] = item_id
+        # Liaison de l'événement clic
+        self.canvas.tag_bind(item_id, "<Button-1>", self.create_callback(x, y))
 
-                if bind_events:
-                    self.canvas.tag_bind(
-                        bonbon, "<Button-1>", self.create_callback(x, y)
-                    )
+    def get_candy_image(self, val):
+        """Détermine l'image correcte à partir de la chaîne de caractères du bonbon."""
+        if val == "__":
+            return None
+        if val == "r_":
+            return self.get_asset("rainbow")
 
-        self.conteneur.root.update()
+        color_name = COLOR_PATH.get(val[0], "red")
+        suffix = f"-{val[1]}" if len(val) > 1 and val[1] in "vhp" else ""
+        return self.get_asset(color_name + suffix)
 
-    def play_move(self, x: int, y: int):
-        echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
-        nouvelle_grille = supprimer_bonbons_en_ligne(
-            self.grille, self.bonbon_choisi, (x, y)
+    def animate_move(self, movements, step=0, callback=None):
+        """
+        Déplace fluidement un ou plusieurs objets sur le canvas.
+
+        Args:
+            movements (list): Liste de listes [item_id, dx, dy].
+            step (int): Étape actuelle de l'animation.
+            callback (function): Action à exécuter après la fin du mouvement.
+        """
+        if step >= STEPS:
+            if callback:
+                callback()
+            return
+
+        for move in movements:
+            self.canvas.move(move[0], move[1], move[2])
+
+        self.root.after(
+            ANIM_SPEED, lambda: self.animate_move(movements, step + 1, callback)
         )
 
-        x2, y2 = self.bonbon_choisi
-        if abs(x2 - x) + abs(y2 - y) != 1:
-            echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
+    def play_move(self, x, y):
+        """Gère la séquence d'échange de deux bonbons."""
+        if self.is_animating or not self.bonbon_choisi:
             return
 
-        if grille_est_stable(self.grille, nouvelle_grille):
-            echanger_deux_bonbons(self.grille, (x, y), self.bonbon_choisi)
+        x_prev, y_prev = self.bonbon_choisi
+        # Vérification de la proximité (voisins directs uniquement)
+        if abs(x_prev - x) + abs(y_prev - y) != 1:
+            self.bonbon_choisi = None
+            self.actualiser_selecteur()
             return
 
+        self.is_animating = True
         self.bonbon_choisi = None
-        self.actualiser_bonbons(bind_events=False)
+        self.actualiser_selecteur()
 
-        stable = grille_est_stable(self.grille, nouvelle_grille)
-        while not stable:
-            self.grille = nouvelle_grille
-            sleep(DELAY)
-            self.actualiser_bonbons(bind_events=False)
-            sleep(DELAY)
+        id1, id2 = self.items[(x, y)], self.items[(x_prev, y_prev)]
+        px1, py1 = self.get_pixel_pos(x, y)
+        px2, py2 = self.get_pixel_pos(x_prev, y_prev)
+
+        def after_swap():
+            # Échange des données logiques
+            echanger_deux_bonbons(self.grille, (x, y), (x_prev, y_prev))
+            nouvelle = supprimer_bonbons_en_ligne(self.grille, (x_prev, y_prev), (x, y))
+
+            if self.grille == nouvelle:
+                # Mouvement invalide : on annule visuellement l'échange
+                self.animate_move(
+                    [
+                        [id1, (px1 - px2) / STEPS, (py1 - py2) / STEPS],
+                        [id2, (px2 - px1) / STEPS, (py2 - py1) / STEPS],
+                    ],
+                    callback=self.end_animation_revert,
+                )
+                echanger_deux_bonbons(self.grille, (x, y), (x_prev, y_prev))
+            else:
+                # Mouvement validé : mise à jour du dictionnaire d'items
+                self.items[(x, y)], self.items[(x_prev, y_prev)] = id2, id1
+                self.resolve_board(nouvelle, (x, y), (x_prev, y_prev))
+
+        # Animation d'échange
+        self.animate_move(
+            [
+                [id1, (px2 - px1) / STEPS, (py2 - py1) / STEPS],
+                [id2, (px1 - px2) / STEPS, (py1 - py2) / STEPS],
+            ],
+            callback=after_swap,
+        )
+
+    def end_animation_revert(self):
+        """Réactive les clics après une annulation d'échange."""
+        self.is_animating = False
+
+    def resolve_board(self, grille_post_suppression=None, pos_i=None, pos_f=None):
+        """
+        Orchestre la cascade : destruction, gravité, remplissage.
+        """
+        if grille_post_suppression is not None:
+            nouvelle = grille_post_suppression
+        else:
+            nouvelle = supprimer_bonbons_en_ligne(self.grille, pos_i, pos_f)
+
+        to_destroy, to_transform = [], []
+
+        # Comparaison pour identifier les changements
+        for y in range(len(self.grille)):
+            for x in range(len(self.grille[0])):
+                old, new = self.grille[y][x], nouvelle[y][x]
+                if old != "__":
+                    if new == "__":
+                        to_destroy.append((x, y))
+                    elif new != old:
+                        to_transform.append((x, y, new))
+
+        if not to_destroy and not to_transform:
+            self.is_animating = False
+            self.actualiser_bindings()
+            return
+
+        self.animate_destruction(
+            to_destroy, to_transform, lambda: self.after_destruction(nouvelle)
+        )
+
+    def animate_destruction(self, destroy_coords, transform_data, callback, step=0):
+        """Fait clignoter les bonbons détruits et transforme les bonus."""
+        if step >= 4:
+            for x, y in destroy_coords:
+                if (x, y) in self.items:
+                    self.canvas.delete(self.items[x, y])
+                    del self.items[x, y]
+
+            for x, y, val in transform_data:
+                if (x, y) in self.items:
+                    self.canvas.itemconfig(
+                        self.items[x, y], image=self.get_candy_image(val)
+                    )
+
+            callback()
+            return
+
+        # Effet visuel de clignotement
+        visibilite = "hidden" if step % 2 == 0 else "normal"
+        for x, y in destroy_coords:
+            if (x, y) in self.items:
+                self.canvas.itemconfig(self.items[x, y], state=visibilite)
+
+        self.root.after(
+            80,
+            lambda: self.animate_destruction(
+                destroy_coords, transform_data, callback, step + 1
+            ),
+        )
+
+    def after_destruction(self, nouvelle_grille):
+        """Lance l'animation de gravité après la phase de destruction."""
+        self.grille = nouvelle_grille
+        self.animate_gravity(lambda: self.after_gravity())
+
+    def animate_gravity(self, callback):
+        """Calcule et anime la chute des bonbons existants vers le bas."""
+        movements, new_items = [], {}
+
+        for x in range(len(self.grille[0])):
+            vides = 0
+            for y in range(len(self.grille) - 1, -1, -1):
+                if self.grille[y][x] == "__":
+                    vides += 1
+                elif vides > 0:
+                    item_id = self.items.pop((x, y))
+                    target_y = y + vides
+                    dist_px = vides * (SIZE + GAP)
+                    movements.append([item_id, 0, dist_px / STEPS])
+                    new_items[(x, target_y)] = item_id
+                else:
+                    if (x, y) in self.items:
+                        new_items[(x, y)] = self.items.pop((x, y))
+
+        self.items = new_items
+
+        if not movements:
+            callback()
+        else:
             appliquer_gravite(self.grille)
-            self.actualiser_bonbons(bind_events=False)
-            sleep(DELAY)
-            ajouter_bonbons_aleatoires(self.grille, self.nb_bonbons)
-            nouvelle_grille = supprimer_bonbons_en_ligne(self.grille)
-            stable = grille_est_stable(self.grille, nouvelle_grille)
-            if not stable:
-                self.actualiser_bonbons(bind_events=False)
-        self.actualiser_bonbons()
+            self.animate_move(movements, callback=callback)
+
+    def after_gravity(self):
+        """Remplit les trous et vérifie si de nouveaux alignements sont créés."""
+        ajouter_bonbons_aleatoires(self.grille, self.nb_bonbons)
+        self.animate_refill(lambda: self.resolve_board())
+
+    def animate_refill(self, callback):
+        """Anime l'entrée de nouveaux bonbons depuis le haut de l'écran."""
+        movements = []
+        for y in range(len(self.grille)):
+            for x in range(len(self.grille[0])):
+                if (x, y) not in self.items:
+                    px, py_final = self.get_pixel_pos(x, y)
+                    py_start = py_final - (SIZE * 2)  # Départ hors champ
+
+                    item_id = self.canvas.create_image(
+                        px,
+                        py_start,
+                        image=self.get_candy_image(self.grille[y][x]),
+                        anchor="nw",
+                    )
+                    self.items[(x, y)] = item_id
+                    movements.append([item_id, 0, (py_final - py_start) / STEPS])
+
+        if not movements:
+            callback()
+        else:
+            self.animate_move(movements, callback=callback)
+
+    def actualiser_selecteur(self):
+        """Affiche ou cache le cadre de sélection autour du bonbon actif."""
+        self.canvas.delete("selector")
+        if self.bonbon_choisi:
+            px, py = self.get_pixel_pos(*self.bonbon_choisi)
+            self.canvas.create_image(
+                px - GAP,
+                py - GAP,
+                image=self.get_asset("selected"),
+                anchor="nw",
+                tags="selector",
+            )
+
+    def actualiser_bindings(self):
+        """Réattache les clics sur les objets du canvas après remaniement de la grille."""
+        for (x, y), item_id in self.items.items():
+            self.canvas.tag_bind(item_id, "<Button-1>", self.create_callback(x, y))
 
     def create_callback(self, x, y):
-        def callback(e):
-            if self.bonbon_choisi == (x, y):
-                self.bonbon_choisi = None
-            elif self.bonbon_choisi:
-                self.play_move(x, y)
-            else:
-                self.bonbon_choisi = (x, y)
+        """Crée une fonction de rappel pour le clic sur un bonbon spécifique."""
+        return lambda e: self.on_click(x, y)
 
-            if jeu_est_bloque(self.grille):
-                print("Le jeu est bloqué !")
-            self.actualiser_bonbons()
+    def on_click(self, x, y):
+        """Gère la logique de sélection et de déplacement au clic."""
+        if self.is_animating:
+            return
 
-        return callback
+        if self.bonbon_choisi == (x, y):
+            self.bonbon_choisi = None
+        elif self.bonbon_choisi:
+            self.play_move(x, y)
+        else:
+            self.bonbon_choisi = (x, y)
+        self.actualiser_selecteur()
 
 
 if __name__ == "__main__":
-    jeu = CandyCrush(nb_bonbons=5, background="forest")
+    jeu = CandyCrush(nb_bonbons=5, background="background")
     jeu.main()

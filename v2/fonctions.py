@@ -4,6 +4,18 @@ from random import randint
 
 liste_2d = list[list[str]]
 
+dico_bonbon = {
+    "0": "🍎",
+    "1": "🍋",
+    "2": "🥝",
+    "3": "🍉",
+    "4": "🍇",
+    "5": "🍒",
+    "r": "🎂",
+    "_": "・",
+}
+dico_bonus = {"h": "-", "v": "|", "p": "+", "_": " "}
+
 
 def charger_fichier(fichier: str) -> liste_2d:
     """
@@ -92,7 +104,7 @@ def echanger_deux_bonbons(grille: liste_2d, pos_i, pos_f):
     grille[y_i][x_i], grille[y_f][x_f] = grille[y_f][x_f], grille[y_i][x_i]
 
 
-def afficher_grille(grille: liste_2d, dico_bonbon: dict, dico_bonus: dict):
+def afficher_grille(grille: liste_2d):
     """
     Réalise l'affichage dans le terminal de la liste 2D mis en paramètre.
 
@@ -281,7 +293,6 @@ def obtenir_alignement_vertical(grille, x, y):
     return alignement
 
 
-# complexité n^3
 def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
     """
     Supprime tous les bonbons dans une nouvelle grille, formant une ligne verticale ou horizontale d'au moins 3 bonbons alignés
@@ -343,6 +354,10 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
                             grille[y][x] = couleur_cible + type_special_cible
                         a_supprimer.add((x, y))
 
+            return finaliser_suppression(
+                nouvelle_grille, a_supprimer, bonus_potentiels, grille
+            )
+
         # Cas Rayé/Paquet + Rayé/Paquet (vh + vh, vh + p, p + p)
         elif len(b1) > 1 and b1[1] in "vhp" and len(b2) > 1 and b2[1] in "vhp":
             grille[yi][xi] = grille[yi][xi][0] + "_"
@@ -378,6 +393,10 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
                         if 0 <= xf + dx < largeur:
                             a_supprimer.add((xf + dx, i))
 
+            return finaliser_suppression(
+                nouvelle_grille, a_supprimer, bonus_potentiels, grille
+            )
+
     # Analyse des alignements verticaux et horizontaux
     for y in range(hauteur):
         for x in range(largeur):
@@ -393,15 +412,15 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
             couleur = grille[y][x][0]
             # Déterminer le point de création du bonus
             pos_bonus = (x, y)
-            if pos_f in h_match or pos_f in v_match:
+            match_total = set(h_match + v_match)
+            if pos_f in match_total:
                 pos_bonus = pos_f
-            elif pos_i in h_match or pos_i in v_match:
+            elif pos_i in match_total:
                 pos_bonus = pos_i
 
             # Détection Arc-en-ciel (5 alignés)
             if len(h_match) >= 5 or len(v_match) >= 5:
-                match = h_match if len(h_match) >= 5 else v_match
-                for c in match:
+                for c in match_total:
                     a_supprimer.add(c)
                     bonus_potentiels.pop(c, None)
                 # On place l'arc-en-ciel au milieu du match
@@ -439,16 +458,23 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
                 for c in h_match + v_match:
                     a_supprimer.add(c)
 
-    # Gestion des réactions en chaîne
+    return finaliser_suppression(nouvelle_grille, a_supprimer, bonus_potentiels, grille)
+
+
+def finaliser_suppression(
+    nouvelle_grille, a_supprimer, bonus_potentiels, grille_origine
+):
+    """Gère les réactions en chaîne des bonus existants et nettoie la grille."""
+
     deja_traites = set()
     analyse_en_cours = True
     while analyse_en_cours:
         nouveaux = set()
         for x, y in a_supprimer:
             if (x, y) not in deja_traites:
-                bonbon = grille[y][x]
+                bonbon = grille_origine[y][x]
                 if len(bonbon) > 1 and bonbon[1] in "vhp":
-                    zone = obtenir_zone_speciale(grille, x, y, bonbon)
+                    zone = obtenir_zone_speciale(grille_origine, x, y, bonbon)
                     for c in zone:
                         if c not in a_supprimer:
                             nouveaux.add(c)
@@ -600,14 +626,4 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
 
 if __name__ == "__main__":
     g = charger_fichier("data/exemple_bonus.csv")
-    dico_bonbon = {
-        "0": "🍎",
-        "1": "🍋",
-        "2": "🥝",
-        "3": "🍉",
-        "4": "🍇",
-        "5": "🍒",
-        "r": "🎂",
-    }
-    dico_bonus = {"h": "-", "v": "|", "p": "+", "_": " "}
-    afficher_grille(g, dico_bonbon, dico_bonus)
+    afficher_grille(g)
