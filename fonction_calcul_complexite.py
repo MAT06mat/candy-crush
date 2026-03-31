@@ -1,4 +1,4 @@
-from fonctions import *
+from v2.fonctions import *
 
 
 def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
