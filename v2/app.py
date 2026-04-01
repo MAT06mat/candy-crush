@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import Tk, ttk, PhotoImage
+from font_manager import FontManager
 from fonctions import *
 import math
 
@@ -21,6 +22,9 @@ TUILES_PATH = ["TL", "T", "TR", "L", "C", "R", "BL", "B", "BR"]
 # --- Paramètres d'Animation ---
 ANIM_SPEED = 15  # Vitesse de rafraîchissement (ms)
 STEPS = 10  # Nombre d'étapes pour décomposer un mouvement
+
+
+FontManager.load_font("v2/assets/font.ttf")
 
 
 class CandyCrush:
@@ -72,8 +76,8 @@ class CandyCrush:
 
         self.width = event.width
         self.height = event.height
-        self.grille_view.calcul_padding(self.width, self.height)
         self.canvas.config(width=self.width, height=self.height)
+        self.grille_view.set_size(self.width, self.height)
         self.grille_view.recharger_composant()
 
     def main(self):
@@ -108,7 +112,7 @@ class Grille:
         self.is_animating = False
 
         # Calcul dynamique du padding pour centrer la grille
-        self.calcul_padding(sw, sh)
+        self.set_size(sw, sh)
 
         # Chargement de toutes les images et de l'interface
         self.charger_assets()
@@ -116,12 +120,13 @@ class Grille:
         self.initialiser_bonbons()
         self.ajouter_interface()
 
-    def calcul_padding(self, w, h):
-        """Calcul du padding pour centrer la grille"""
+    def set_size(self, w, h):
+        self.width = w
+        self.height = h
         grid_width = len(self.grille[0]) * (SIZE + GAP)
         grid_height = len(self.grille) * (SIZE + GAP)
-        self.px = (w - grid_width) // 2
-        self.py = (h - grid_height) // 2
+        self.px = (self.width - grid_width) // 2
+        self.py = (self.height - grid_height) // 2
 
     def recharger_composant(self):
         """Recharge tous les elements du canvas sauf le bg"""
@@ -134,12 +139,24 @@ class Grille:
         """
         Ajoute des éléments UI (boutons, texte) par-dessus le fond.
         """
+        # Ajout de la topbar
+        topbar = self.get_asset("topbar")
+        pos_x = self.width - 1024
+        self.canvas.create_image(pos_x, 0, image=topbar, anchor="nw", tags="dynamic")
+
+        topbar_part = self.get_asset("topbar-part")
+        while pos_x > 0:
+            pos_x -= 255
+            self.canvas.create_image(
+                pos_x, 0, image=topbar_part, anchor="nw", tags="dynamic"
+            )
+
         # Ajout d'un titre textuel
         self.canvas.create_text(
-            self.px + (len(self.grille[0]) * (SIZE + GAP)) // 2,
-            self.py - 50,
-            text="CANDY CRUSH",
-            font=("Helvetica", 36, "bold"),
+            140,
+            42,
+            text="Candy Crush",
+            font=("Candy Crush", 36, "bold"),
             fill="white",
             tags="dynamic",
         )
@@ -163,6 +180,8 @@ class Grille:
             self.get_asset(tuile, f"v2/assets/grid/{tuile}.png", size=SIZE + GAP)
 
         self.get_asset("selected", "v2/assets/selected.png", SIZE + 2 * GAP)
+        self.get_asset("topbar", "v2/assets/elements/topbar.png", 1024)
+        self.get_asset("topbar-part", "v2/assets/elements/topbar-part.png", 256)
 
     def dessiner_plateau(self):
         """Dessine les tuiles de la grille en utilisant les offsets px et py."""
@@ -195,7 +214,7 @@ class Grille:
             for x in range(len(self.grille[y])):
                 self.creer_bonbon_item(x, y)
 
-    def get_asset(self, index, file=None, size=SIZE):
+    def get_asset(self, index: str, file: str | None = None, size=SIZE) -> PhotoImage:
         """
         Récupère une image redimensionnée ou la crée si elle n'existe pas.
 
