@@ -110,6 +110,7 @@ class Grille:
         self.assets_cache = {}  # Cache pour éviter de recharger les images
         self.items = {}  # Dictionnaire {(x, y): canvas_id}
         self.is_animating = False
+        self.score = 0
 
         # Calcul dynamique du padding pour centrer la grille
         self.set_size(sw, sh)
@@ -151,21 +152,33 @@ class Grille:
                 pos_x, 0, image=topbar_part, anchor="nw", tags="dynamic"
             )
 
-        # Ajout d'un titre textuel
-        self.canvas.create_text(
-            140,
+        # Ajout du text Candy Crush
+        self.create_outlined_text(
+            172,
             42,
             text="Candy Crush",
-            font=("Candy Crush", 36, "bold"),
-            fill="white",
+            font=("candice", 36, "bold"),
+            fill="#F3DE76",
+            outline="#472E09",
             tags="dynamic",
         )
 
-        # Ajout d'un bouton Tkinter via create_window
+        self.draw_score()
+
+        # Ajout du bonton quitter via create_window
         btn_quitter = ttk.Button(self.root, text="Quitter", command=self.root.destroy)
         self.canvas.create_window(
             self.px - 100, self.py, window=btn_quitter, tags="dynamic"
         )
+
+    def create_outlined_text(
+        self, x, y, *args, fill="white", outline="black", outline_width=3, **kwargs
+    ):
+        for teta in [n * math.pi / 4 for n in range(8)]:
+            dx = outline_width * math.cos(teta)
+            dy = outline_width * math.sin(teta)
+            self.canvas.create_text(x + dx, y + dy, fill=outline, *args, **kwargs)
+        self.canvas.create_text(x, y, fill=fill, *args, **kwargs)
 
     def charger_assets(self):
         """Charge toutes les images nécessaires (bonbons, bonus, tuiles) dans le cache."""
@@ -262,6 +275,20 @@ class Grille:
         color_name = COLOR_PATH.get(val[0], "red")
         suffix = f"-{val[1]}" if len(val) > 1 and val[1] in "vhp" else ""
         return self.get_asset(color_name + suffix)
+
+    def draw_score(self):
+        """Actualise le texte du score"""
+
+        self.canvas.delete("score")
+        self.canvas.create_text(
+            self.width - 325,
+            48,
+            text=f"Score : {self.score}",
+            font=("candice", 26, "bold"),
+            fill="#2F6D0F",
+            anchor="w",
+            tags="dynamic score",
+        )
 
     def animate_move(self, movements, step=0, callback=None):
         """
