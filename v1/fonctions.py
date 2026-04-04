@@ -107,9 +107,8 @@ def afficher_grille(grille: liste_2d, nb_type_bonbons: int):
     """
 
     plt.imshow(grille, vmin=0, vmax=nb_type_bonbons - 1, cmap="jet")
-    plt.pause(0.1)
-    plt.draw()
-    plt.pause(0.1)
+    plt.draw()  # force l'affichage immédiat
+    plt.pause(0.2)
 
 
 def demander_mouvement():
@@ -391,8 +390,10 @@ def ajouter_bonbons_aleatoires(grille: liste_2d, nb_type_bonbons: int):
     Returns:
 
     """
+    # Parcours de chaque colonne
     for i in range(len(grille[0])):
         j = 0
+        # Ajout de bonbons dans la colonne i dans les emplacements vides (dans les premières positions)
         while j < len(grille) and grille[j][i] == -1:
             grille[j][i] = randint(0, nb_type_bonbons - 1)
             j += 1
@@ -400,14 +401,15 @@ def ajouter_bonbons_aleatoires(grille: liste_2d, nb_type_bonbons: int):
 
 def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d:
     """
-    Applique les transformations sur la grille, jusqu'à ce qu'elle soit stable et renvoie la nouvelle
+    Supprime les bonbons en ligne, fait tomber les bonbons et complète les trous avec des nouveaux bonbons
+    Renvoie la nouvelle grille
 
     Params:
         grille (liste 2D) : la grille d'origine
         nb_type_bonbons (int) : nombre de types de bonbons possibles
 
     Returns:
-        nouvelle_grille (liste 2D) : copie de la grille d'origine avec transformations
+        nouvelle_grille (liste 2D) : la grille transformée
 
     """
     nouvelle_grille = supprimer_bonbons_en_ligne(grille)
