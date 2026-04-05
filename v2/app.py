@@ -393,8 +393,12 @@ class Grille:
                     elif new != old:
                         to_transform.append((x, y, new))
 
+        scores = create_animation(
+            None, ANIM_SCORE, new_score - self.score, steps=2 * STEPS
+        )[1]
+
         self.animate_score(
-            create_animation(None, ANIM_SCORE, new_score - self.score)[1],
+            scores,
             final=new_score,
         )
 
@@ -415,8 +419,7 @@ class Grille:
             movements (list): Liste de scores .
             step (int): Étape actuelle de l'animation.
         """
-
-        if step >= STEPS:
+        if step >= len(scores):
             self.score = final
             self.draw_score()
             return
