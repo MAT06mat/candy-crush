@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import Tk, ttk, PhotoImage
 from font_manager import FontManager
 from fonctions import *
+from utils import *
 import math
 
 # --- Configuration Visuelle ---
@@ -18,10 +19,6 @@ COLOR_PATH = {
     "5": "orange",
 }
 TUILES_PATH = ["TL", "T", "TR", "L", "C", "R", "BL", "B", "BR"]
-
-# --- Paramètres d'Animation ---
-ANIM_SPEED = 15  # Vitesse de rafraîchissement (ms)
-STEPS = 10  # Nombre d'étapes pour décomposer un mouvement
 
 
 FontManager.load_font("v2/assets/font.ttf")
@@ -283,7 +280,7 @@ class Grille:
         self.canvas.create_text(
             self.width - 325,
             48,
-            text=f"Score : {self.score}",
+            text=f"Score : {int(self.score)}",
             font=("candice", 26, "bold"),
             fill="#2F6D0F",
             anchor="w",
@@ -305,7 +302,7 @@ class Grille:
             return
 
         for move in movements:
-            self.canvas.move(move[0], move[1], move[2])
+            self.canvas.move(move[0], move[1][step], move[2][step])
 
         self.root.after(
             ANIM_SPEED, lambda: self.animate_move(movements, step + 1, callback)
@@ -340,8 +337,8 @@ class Grille:
                 # Mouvement invalide : on annule visuellement l'échange
                 self.animate_move(
                     [
-                        [id1, (px1 - px2) / STEPS, (py1 - py2) / STEPS],
-                        [id2, (px2 - px1) / STEPS, (py2 - py1) / STEPS],
+                        create_animation(id1, ANIM_SWAP, px1 - px2, py1 - py2),
+                        create_animation(id2, ANIM_SWAP, px2 - px1, py2 - py1),
                     ],
                     callback=self.end_animation_revert,
                 )
@@ -354,8 +351,8 @@ class Grille:
         # Animation d'échange
         self.animate_move(
             [
-                [id1, (px2 - px1) / STEPS, (py2 - py1) / STEPS],
-                [id2, (px1 - px2) / STEPS, (py1 - py2) / STEPS],
+                create_animation(id1, ANIM_SWAP, px2 - px1, py2 - py1),
+                create_animation(id2, ANIM_SWAP, px1 - px2, py1 - py2),
             ],
             callback=after_swap,
         )
@@ -375,15 +372,31 @@ class Grille:
 
         to_destroy, to_transform = [], []
 
+        new_score = self.score
         # Comparaison pour identifier les changements
         for y in range(len(self.grille)):
             for x in range(len(self.grille[0])):
                 old, new = self.grille[y][x], nouvelle[y][x]
                 if old != "__":
                     if new == "__":
+                        new_score += 5
+                        if old[1] != "_" or old[0] == "r":
+                            match old[1]:
+                                case "h" | "v":
+                                    new_score += 10
+                                case "p":
+                                    new_score += 20
+                                case _:
+                                    new_score += 95
+
                         to_destroy.append((x, y))
                     elif new != old:
                         to_transform.append((x, y, new))
+
+        self.animate_score(
+            create_animation(None, ANIM_SCORE, new_score - self.score)[1],
+            final=new_score,
+        )
 
         if not to_destroy and not to_transform:
             self.is_animating = False
@@ -393,6 +406,24 @@ class Grille:
         self.animate_destruction(
             to_destroy, to_transform, lambda: self.after_destruction(nouvelle)
         )
+
+    def animate_score(self, scores, final, step=0):
+        """
+        Rafraichit fluidement le score.
+
+        Args:
+            movements (list): Liste de scores .
+            step (int): Étape actuelle de l'animation.
+        """
+
+        if step >= STEPS:
+            self.score = final
+            self.draw_score()
+            return
+
+        self.score += scores[step]
+        self.draw_score()
+        self.root.after(ANIM_SPEED, lambda: self.animate_score(scores, final, step + 1))
 
     def animate_destruction(self, destroy_coords, transform_data, callback, step=0):
         """Fait clignoter les bonbons détruits et transforme les bonus."""
@@ -442,7 +473,9 @@ class Grille:
                     item_id = self.items.pop((x, y))
                     target_y = y + vides
                     dist_px = vides * (SIZE + GAP)
-                    movements.append([item_id, 0, dist_px / STEPS])
+                    movements.append(
+                        create_animation(item_id, ANIM_GRAVITY, 0, dist_px)
+                    )
                     new_items[(x, target_y)] = item_id
                 else:
                     if (x, y) in self.items:
@@ -478,7 +511,9 @@ class Grille:
                         tags="dynamic",
                     )
                     self.items[(x, y)] = item_id
-                    movements.append([item_id, 0, (py_final - py_start) / STEPS])
+                    movements.append(
+                        create_animation(item_id, ANIM_GRAVITY, 0, py_final - py_start)
+                    )
 
         if not movements:
             callback()
