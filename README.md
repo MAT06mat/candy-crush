@@ -16,16 +16,16 @@ La difficulté implémentée est le niveau 1, cependant, nous avons ajouté des 
 
 Les bonbons rayés (h/v):
 
-![image](assets/candies/red-h.png)
-![image](assets/candies/red-v.png)
+![image](v2/assets/candies/red-h.png)
+![image](v2/assets/candies/red-v.png)
 
 Les bonbons explosifs (p) :
 
-![image](assets/candies/red-p.png)
+![image](v2/assets/candies/red-p.png)
 
 Et le bonbon arc-en-ciel (r) :
 
-![image](assets/candies/rainbow.png)
+![image](v2/assets/candies/rainbow.png)
 
 Pour la grille, nous avons choisi de la représenter par une liste 2D de strings. Chacun des éléments de cette liste 2D est sur 2 caractères. La convention pour la grille est la suivante :
 
