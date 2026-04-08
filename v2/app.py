@@ -29,17 +29,7 @@ class CandyCrush:
     Classe principale gérant la fenêtre du jeu et l'initialisation globale.
     """
 
-    def __init__(self, largeur=7, hauteur=6, nb_bonbons=6, background="background"):
-        """
-        Configure l'interface utilisateur et lance la génération de la grille.
-
-        Args:
-            largeur (int): Nombre de colonnes.
-            hauteur (int): Nombre de lignes.
-            nb_bonbons (int): Nombre de couleurs différentes.
-            background (str): Nom du fichier image pour le fond.
-        """
-
+    def __init__(self, background="background"):
         self.width = 1520
         self.height = 780
 
@@ -48,20 +38,32 @@ class CandyCrush:
         self.root.geometry(f"{self.width}x{self.height}+0+0")
         self.root.minsize(1200, 675)
         self.root.maxsize(1920, 1080)
-        # self.root.state("zoomed")
+
         self.root.bind("<Configure>", self.on_configure)
 
-        # Canvas principal qui occupe toute la fenêtre
         self.canvas = tk.Canvas(
             self.root, width=self.width, height=self.height, highlightthickness=0
         )
         self.canvas.pack(fill="both", expand=True)
 
-        # Chargement du fond directement sur le canvas
         self.bg_img = PhotoImage(file=f"v2/assets/backgrounds/{background}.png")
         self.canvas.create_image(0, 0, image=self.bg_img, anchor="nw")
 
-        # Génération des données et création de la vue
+        self.grille_view = None
+        self.menu = None
+        self.creer_menu()
+
+    def creer_menu(self):
+        """Initialise le menu de configuration."""
+        self.menu = Menu(self.canvas, self.width, self.height, self.lancer_partie)
+
+    def lancer_partie(self, h, l, n, coups):
+        """Détruit le menu et lance la grille."""
+        self.canvas.delete("dynamic")
+        self.menu = None
+        self.creer_grille(largeur=l, hauteur=h, nb_bonbons=n)
+
+    def creer_grille(self, largeur=7, hauteur=6, nb_bonbons=6):
         grille_donnees = generer_grille(hauteur, largeur, nb_bonbons)
         self.grille_view = Grille(
             self.canvas, grille_donnees, nb_bonbons, sw=self.width, sh=self.height
@@ -70,16 +72,182 @@ class CandyCrush:
     def on_configure(self, event):
         if not isinstance(event.widget, tk.Tk):
             return
-
         self.width = event.width
         self.height = event.height
         self.canvas.config(width=self.width, height=self.height)
-        self.grille_view.set_size(self.width, self.height)
-        self.grille_view.recharger_composant()
+        if self.grille_view:
+            self.grille_view.set_size(self.width, self.height)
+            self.grille_view.recharger_composant()
+        if self.menu:
+            self.menu.set_size(self.width, self.height)
+            self.menu.recharger_composant()
 
     def main(self):
-        """Lance la boucle principale de Tkinter."""
         self.root.mainloop()
+
+
+class Menu:
+    """
+    Gère l'affichage du popup avec des textes natifs au Canvas pour éviter les glitchs.
+    """
+
+    def __init__(self, canvas: tk.Canvas, sw, sh, callback_valider):
+        self.canvas = canvas
+        self.root = canvas.winfo_toplevel()
+        self.callback_valider = callback_valider
+
+        # Variables de contrôle
+        self.val_h = tk.IntVar(value=6)
+        self.val_l = tk.IntVar(value=7)
+        self.val_n = tk.IntVar(value=5)
+        self.val_coups = tk.StringVar(value="30")
+
+        self.set_size(sw, sh)
+        self.draw_interface()
+
+    def set_size(self, w, h):
+        self.width = w
+        self.height = h
+        self.px = self.width // 2
+        self.py = self.height // 2
+
+    def recharger_composant(self):
+        self.canvas.delete("dynamic")
+        self.draw_interface()
+
+    def snap_value(self, val, var, tag):
+        """Arrondit la valeur et met à jour le texte du Canvas manuellement."""
+        n = int(round(float(val)))
+        var.set(n)
+        self.canvas.itemconfig(tag, text=str(n))
+
+    def draw_interface(self):
+        """Dessine l'interface en utilisant create_text pour les valeurs."""
+
+        # --- Fond du popup ---
+        menu_w, menu_h = 450, 550
+        self.canvas.create_rectangle(
+            self.px - menu_w // 2,
+            self.py - menu_h // 2,
+            self.px + menu_w // 2,
+            self.py + menu_h // 2,
+            fill="#FFFFFF",
+            outline="#472E09",
+            width=4,
+            tags="dynamic",
+        )
+
+        self.canvas.create_text(
+            self.px,
+            self.py - 230,
+            text="Paramètres",
+            font=("candice", 32),
+            fill="#472E09",
+            tags="dynamic",
+        )
+
+        # --- Configuration des Sliders ---
+        configs = [
+            ("Lignes (Vertical) : ", self.val_h, 4, 10, -140, "val_h_txt"),
+            ("Colonnes (Horizontal) : ", self.val_l, 4, 12, -60, "val_l_txt"),
+            ("Types de bonbons : ", self.val_n, 3, 6, 20, "val_n_txt"),
+        ]
+
+        slider_len = 300
+
+        for text, var, v_min, v_max, y_off, tag in configs:
+            # Libellé fixe
+            self.canvas.create_text(
+                self.px - 180,
+                self.py + y_off,
+                text=text,
+                font=("Helvetica", 12, "bold"),
+                anchor="w",
+                fill="#472E09",
+                tags="dynamic",
+            )
+
+            # Valeur dynamique
+            self.canvas.create_text(
+                self.px + 150,
+                self.py + y_off,
+                text=str(var.get()),
+                font=("Helvetica", 12, "bold"),
+                fill="#E74C3C",
+                tags=f"dynamic {tag}",
+                anchor="center",
+            )
+
+            # Slider
+            slider = ttk.Scale(
+                self.root,
+                from_=v_min,
+                to=v_max,
+                variable=var,
+                orient="horizontal",
+                length=slider_len,
+                command=lambda v, var=var, tag=tag: self.snap_value(v, var, tag),
+            )
+            self.canvas.create_window(
+                self.px, self.py + y_off + 30, window=slider, tags="dynamic"
+            )
+
+            # Min / Max
+            self.canvas.create_text(
+                self.px - (slider_len // 2),
+                self.py + y_off + 50,
+                text=str(v_min),
+                font=("Helvetica", 10),
+                fill="#7F8C8D",
+                tags="dynamic",
+            )
+            self.canvas.create_text(
+                self.px + (slider_len // 2),
+                self.py + y_off + 50,
+                text=str(v_max),
+                font=("Helvetica", 10),
+                fill="#7F8C8D",
+                tags="dynamic",
+            )
+
+        # --- Entry pour les coups ---
+        self.canvas.create_text(
+            self.px - 180,
+            self.py + 110,
+            text="Nombre de coups max :",
+            font=("Helvetica", 12, "bold"),
+            anchor="w",
+            fill="#472E09",
+            tags="dynamic",
+        )
+
+        entry_coups = ttk.Entry(
+            self.root, textvariable=self.val_coups, width=10, justify="center"
+        )
+        self.canvas.create_window(
+            self.px + 100, self.py + 110, window=entry_coups, tags="dynamic"
+        )
+
+        # --- Bouton Valider ---
+        btn_valider = ttk.Button(
+            self.root, text="LANCER LA PARTIE", command=self.valider_settings
+        )
+        self.canvas.create_window(
+            self.px,
+            self.py + 200,
+            window=btn_valider,
+            tags="dynamic",
+            height=40,
+            width=200,
+        )
+
+    def valider_settings(self):
+        try:
+            h, l, n = self.val_h.get(), self.val_l.get(), self.val_n.get()
+            coups = int(self.val_coups.get())
+            self.callback_valider(h, l, n, coups)
+        except ValueError:
+            pass
 
 
 class Grille:
@@ -560,5 +728,5 @@ class Grille:
 
 
 if __name__ == "__main__":
-    jeu = CandyCrush(nb_bonbons=5, background="background")
+    jeu = CandyCrush()
     jeu.main()
