@@ -1,8 +1,9 @@
 import tkinter as tk
-from tkinter import Tk, ttk, PhotoImage
+from tkinter import Tk, ttk, PhotoImage, messagebox
 from font_manager import FontManager
 from fonctions import *
 from utils import *
+from storage import storage
 import math
 
 # --- Configuration Visuelle ---
@@ -29,7 +30,7 @@ class CandyCrush:
     Classe principale gérant la fenêtre du jeu et l'initialisation globale.
     """
 
-    def __init__(self, background="background"):
+    def __init__(self):
         self.width = 1520
         self.height = 780
 
@@ -46,27 +47,66 @@ class CandyCrush:
         )
         self.canvas.pack(fill="both", expand=True)
 
-        self.bg_img = PhotoImage(file=f"v2/assets/backgrounds/{background}.png")
+        self.bg_img = PhotoImage(file="v2/assets/backgrounds/background.png")
         self.canvas.create_image(0, 0, image=self.bg_img, anchor="nw")
-
         self.grille_view = None
-        self.menu = None
-        self.creer_menu()
 
-    def creer_menu(self):
-        """Initialise le menu de configuration."""
-        self.menu = Menu(self.canvas, self.width, self.height, self.lancer_partie)
+        self.root.update()
 
-    def lancer_partie(self, h, l, n, coups):
-        """Détruit le menu et lance la grille."""
-        self.canvas.delete("dynamic")
-        self.menu = None
-        self.creer_grille(largeur=l, hauteur=h, nb_bonbons=n)
+        if storage.is_first_time:
+            self.ouvrir_parametres()
+        else:
+            self.lancer_jeu()
 
-    def creer_grille(self, largeur=7, hauteur=6, nb_bonbons=6):
-        grille_donnees = generer_grille(hauteur, largeur, nb_bonbons)
+    def ouvrir_parametres(self):
+        """Ouvre la fenêtre de réglages en mode popup."""
+        ParametresWindow(self.root, self.appliquer_parametres)
+
+    def appliquer_parametres(self, h, l, n, coups):
+        """Sauvegarde les réglages et (re)lance la partie."""
+
+        _h = int(storage.get("lignes"))
+        _l = int(storage.get("colonnes"))
+        _n = int(storage.get("nb_bonbons"))
+        _coups = int(storage.get("coups"))
+
+        rep = False
+        if (
+            _h != h or _l != l or _n != n or _coups != coups
+        ) and not storage.is_first_time:
+            rep = messagebox.askyesno(
+                "Enregistrer les paramètres",
+                "Attention, l'enregistrement des paramètres redemarrera une nouvelle partie.\nVoulez-vous vraiment enregistrer les paramètres ?\nLa partie actuelle sera perdue.",
+            )
+
+        if rep or storage.is_first_time:
+            if storage.is_first_time:
+                storage.create_file()
+
+            storage.set("lignes", h)
+            storage.set("colonnes", l)
+            storage.set("nb_bonbons", n)
+            storage.set("coups", coups)
+
+            self.lancer_jeu()
+
+    def lancer_jeu(self):
+        """Lance la grille avec les paramètres stockés en mémoire."""
+        if self.grille_view:
+            self.canvas.delete("dynamic")
+
+        h = int(storage.get("lignes"))
+        l = int(storage.get("colonnes"))
+        n = int(storage.get("nb_bonbons"))
+
+        grille_donnees = generer_grille(h, l, n)
         self.grille_view = Grille(
-            self.canvas, grille_donnees, nb_bonbons, sw=self.width, sh=self.height
+            self.canvas,
+            grille_donnees,
+            n,
+            self.width,
+            self.height,
+            self.ouvrir_parametres,
         )
 
     def on_configure(self, event):
@@ -78,176 +118,99 @@ class CandyCrush:
         if self.grille_view:
             self.grille_view.set_size(self.width, self.height)
             self.grille_view.recharger_composant()
-        if self.menu:
-            self.menu.set_size(self.width, self.height)
-            self.menu.recharger_composant()
 
     def main(self):
         self.root.mainloop()
 
 
-class Menu:
+class ParametresWindow(tk.Toplevel):
     """
-    Gère l'affichage du popup avec des textes natifs au Canvas pour éviter les glitchs.
+    Fenêtre secondaire pour configurer les paramètres du jeu.
     """
 
-    def __init__(self, canvas: tk.Canvas, sw, sh, callback_valider):
-        self.canvas = canvas
-        self.root = canvas.winfo_toplevel()
+    def __init__(self, root: Tk, callback_valider):
+        super().__init__(root)
+        self.title("Réglages Candy Crush")
+        self.geometry("400x500")
+        self.resizable(False, False)
+
+        self.root = root
+        self.grab_set()  # Rend la fenêtre modale (bloque l'accès au jeu derrière)
+
         self.callback_valider = callback_valider
 
-        # Variables de contrôle
-        self.val_h = tk.IntVar(value=6)
-        self.val_l = tk.IntVar(value=7)
-        self.val_n = tk.IntVar(value=5)
-        self.val_coups = tk.StringVar(value="30")
+        # Variables de contrôle initialisées avec le storage
+        self.val_h = tk.IntVar(value=int(storage.get("lignes")))
+        self.val_l = tk.IntVar(value=int(storage.get("colonnes")))
+        self.val_n = tk.IntVar(value=int(storage.get("nb_bonbons")))
+        self.val_coups = tk.StringVar(value=storage.get("coups"))
 
-        self.set_size(sw, sh)
-        self.draw_interface()
+        self.creer_widgets()
+        self.bind("<Destroy>", self.on_destroy)
 
-    def set_size(self, w, h):
-        self.width = w
-        self.height = h
-        self.px = self.width // 2
-        self.py = self.height // 2
+    def on_destroy(self, e):
+        if isinstance(e.widget, tk.Toplevel):
+            if storage.is_first_time:
+                self.root.destroy()
 
-    def recharger_composant(self):
-        self.canvas.delete("dynamic")
-        self.draw_interface()
-
-    def snap_value(self, val, var, tag):
-        """Arrondit la valeur et met à jour le texte du Canvas manuellement."""
+    def snap_value(self, val, var, label_obj):
+        """Arrondit la valeur du slider et met à jour son label."""
         n = int(round(float(val)))
         var.set(n)
-        self.canvas.itemconfig(tag, text=str(n))
+        label_obj.config(text=str(n))
 
-    def draw_interface(self):
-        """Dessine l'interface en utilisant create_text pour les valeurs."""
+    def creer_widgets(self):
+        """Crée l'interface de saisie dans la petite fenêtre."""
 
-        # --- Fond du popup ---
-        menu_w, menu_h = 450, 550
-        self.canvas.create_rectangle(
-            self.px - menu_w // 2,
-            self.py - menu_h // 2,
-            self.px + menu_w // 2,
-            self.py + menu_h // 2,
-            fill="#FFFFFF",
-            outline="#472E09",
-            width=4,
-            tags="dynamic",
-        )
+        tk.Label(self, text="PARAMÈTRES", font=("Helvetica", 18, "bold")).pack(pady=20)
 
-        self.canvas.create_text(
-            self.px,
-            self.py - 230,
-            text="Paramètres",
-            font=("candice", 32),
-            fill="#472E09",
-            tags="dynamic",
-        )
-
-        # --- Configuration des Sliders ---
         configs = [
-            ("Lignes (Vertical) : ", self.val_h, 4, 10, -140, "val_h_txt"),
-            ("Colonnes (Horizontal) : ", self.val_l, 4, 12, -60, "val_l_txt"),
-            ("Types de bonbons : ", self.val_n, 3, 6, 20, "val_n_txt"),
+            ("Lignes", self.val_h, 4, 10),
+            ("Colonnes", self.val_l, 4, 12),
+            ("Couleurs", self.val_n, 3, 6),
         ]
 
-        slider_len = 300
+        for nom, var, v_min, v_max in configs:
+            frame = tk.Frame(self)
+            frame.pack(fill="x", padx=20, pady=10)
 
-        for text, var, v_min, v_max, y_off, tag in configs:
-            # Libellé fixe
-            self.canvas.create_text(
-                self.px - 180,
-                self.py + y_off,
-                text=text,
-                font=("Helvetica", 12, "bold"),
-                anchor="w",
-                fill="#472E09",
-                tags="dynamic",
-            )
+            tk.Label(frame, text=nom, font=("Helvetica", 10, "bold")).pack(side="left")
 
-            # Valeur dynamique
-            self.canvas.create_text(
-                self.px + 150,
-                self.py + y_off,
-                text=str(var.get()),
-                font=("Helvetica", 12, "bold"),
-                fill="#E74C3C",
-                tags=f"dynamic {tag}",
-                anchor="center",
+            val_label = tk.Label(
+                frame, text=str(var.get()), fg="red", font=("Helvetica", 10, "bold")
             )
+            val_label.pack(side="right")
 
-            # Slider
-            slider = ttk.Scale(
-                self.root,
-                from_=v_min,
-                to=v_max,
-                variable=var,
-                orient="horizontal",
-                length=slider_len,
-                command=lambda v, var=var, tag=tag: self.snap_value(v, var, tag),
+            s = ttk.Scale(
+                self, from_=v_min, to=v_max, variable=var, orient="horizontal"
             )
-            self.canvas.create_window(
-                self.px, self.py + y_off + 30, window=slider, tags="dynamic"
-            )
+            s.config(command=lambda v, var=var, l=val_label: self.snap_value(v, var, l))
+            s.pack(fill="x", padx=20)
 
-            # Min / Max
-            self.canvas.create_text(
-                self.px - (slider_len // 2),
-                self.py + y_off + 50,
-                text=str(v_min),
-                font=("Helvetica", 10),
-                fill="#7F8C8D",
-                tags="dynamic",
-            )
-            self.canvas.create_text(
-                self.px + (slider_len // 2),
-                self.py + y_off + 50,
-                text=str(v_max),
-                font=("Helvetica", 10),
-                fill="#7F8C8D",
-                tags="dynamic",
-            )
-
-        # --- Entry pour les coups ---
-        self.canvas.create_text(
-            self.px - 180,
-            self.py + 110,
-            text="Nombre de coups max :",
-            font=("Helvetica", 12, "bold"),
-            anchor="w",
-            fill="#472E09",
-            tags="dynamic",
+        tk.Label(
+            self, text="Nombre de coups max :", font=("Helvetica", 10, "bold")
+        ).pack(pady=(20, 0))
+        ttk.Entry(self, textvariable=self.val_coups, width=10, justify="center").pack(
+            pady=5
         )
 
-        entry_coups = ttk.Entry(
-            self.root, textvariable=self.val_coups, width=10, justify="center"
+        frame = tk.Frame(self)
+        frame.pack(pady=30)
+        ttk.Button(frame, text="Annuler", width=9, command=self.destroy).grid(
+            row=0, column=0, padx=5
         )
-        self.canvas.create_window(
-            self.px + 100, self.py + 110, window=entry_coups, tags="dynamic"
-        )
-
-        # --- Bouton Valider ---
-        btn_valider = ttk.Button(
-            self.root, text="LANCER LA PARTIE", command=self.valider_settings
-        )
-        self.canvas.create_window(
-            self.px,
-            self.py + 200,
-            window=btn_valider,
-            tags="dynamic",
-            height=40,
-            width=200,
+        ttk.Button(frame, text="Valider et jouer", width=15, command=self.valider).grid(
+            row=0, column=1, padx=5
         )
 
-    def valider_settings(self):
+    def valider(self):
         try:
             h, l, n = self.val_h.get(), self.val_l.get(), self.val_n.get()
-            coups = int(self.val_coups.get())
-            self.callback_valider(h, l, n, coups)
+            c = int(self.val_coups.get())
+            self.callback_valider(h, l, n, c)
+            self.destroy()
         except ValueError:
-            pass
+            messagebox.showerror("Erreur", "Le nombre de coups doit être un entier.")
 
 
 class Grille:
@@ -255,7 +218,7 @@ class Grille:
     Gère l'affichage graphique de la grille, les animations et les interactions utilisateur.
     """
 
-    def __init__(self, canvas: tk.Canvas, grille, nb_bonbons, sw, sh):
+    def __init__(self, canvas: tk.Canvas, grille, nb_bonbons, sw, sh, callback_menu):
         """
         Initialise le moteur graphique du plateau de jeu.
 
@@ -270,6 +233,7 @@ class Grille:
         self.root = canvas.winfo_toplevel()
         self.grille = grille
         self.nb_bonbons = nb_bonbons
+        self.callback_menu = callback_menu
 
         self.bonbon_choisi = None  # Stocke (x, y) du premier bonbon cliqué
         self.assets_cache = {}  # Cache pour éviter de recharger les images
@@ -292,7 +256,7 @@ class Grille:
         grid_width = len(self.grille[0]) * (SIZE + GAP)
         grid_height = len(self.grille) * (SIZE + GAP)
         self.px = (self.width - grid_width) // 2
-        self.py = (self.height - grid_height) // 2
+        self.py = (self.height - grid_height) // 2 + 43
 
     def recharger_composant(self):
         """Recharge tous les elements du canvas sauf le bg"""
@@ -330,11 +294,28 @@ class Grille:
 
         self.draw_score()
 
-        # Ajout du bonton quitter via create_window
-        btn_quitter = ttk.Button(self.root, text="Quitter", command=self.root.destroy)
-        self.canvas.create_window(
-            self.px - 100, self.py, window=btn_quitter, tags="dynamic"
+        # Bouton Quitter
+        btn_quitter = ttk.Button(
+            self.root, text="Quitter", command=self.confirmer_quitter
         )
+        self.canvas.create_window(
+            self.px - 100, self.py + 34, window=btn_quitter, tags="dynamic"
+        )
+
+        # Bouton Menu avec confirmation
+        btn_menu = ttk.Button(self.root, text="Réglages", command=self.callback_menu)
+        self.canvas.create_window(
+            self.px - 100, self.py, window=btn_menu, tags="dynamic"
+        )
+
+    def confirmer_quitter(self):
+        """Demande confirmation avant de quitter la partie en cours."""
+        rep = messagebox.askyesno(
+            "Quitter",
+            "Voulez-vous vraiment quitter la partie en cours ?\nLa partie actuelle sera perdue.",
+        )
+        if rep:
+            self.root.destroy()
 
     def create_outlined_text(
         self, x, y, *args, fill="white", outline="black", outline_width=3, **kwargs

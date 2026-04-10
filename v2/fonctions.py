@@ -325,12 +325,7 @@ def supprimer_bonbons_en_ligne(grille: liste_2d, pos_i=None, pos_f=None):
 
         # Cas Arc-en-ciel + Arc-en-ciel : On vide toute la grille
         if b1 == "r_" and b2 == "r_":
-            grille[yi][xi] = "__"
-            grille[yf][xf] = "__"
-
-            for y in range(hauteur):
-                for x in range(largeur):
-                    a_supprimer.add((x, y))
+            return dupliquer_grille([["__"] * largeur] * hauteur)
 
         # Cas Arc-en-ciel + Autre bonbon
         elif b1 == "r_" or b2 == "r_":
