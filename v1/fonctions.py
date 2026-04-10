@@ -249,7 +249,7 @@ def obtenir_alignement_vertical(grille, x, y):
 
 
 def test_bonbon_alignee(grille: liste_2d):
-    nouvelle_grille = supprimer_bonbons_en_ligne(grille)
+    nouvelle_grille, bonbons_supprimes = supprimer_bonbons_en_ligne(grille)
     return not grille_est_stable(grille, nouvelle_grille)
 
 
@@ -265,11 +265,13 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
 
     Returns:
         nouvelle_grille (liste 2D) : la grille sans les bonbons formant des lignes
+        total_bonbons_supprimes (int) : le total de bonbons supprimés
 
     """
     nouvelle_grille = dupliquer_grille(grille)
     hauteur = len(grille)
     largeur = len(grille[0])
+    total_bonbons_supprimes = 0
 
     # Analyse des alignements verticaux et horizontaux
     for y in range(hauteur):
@@ -281,9 +283,11 @@ def supprimer_bonbons_en_ligne(grille: liste_2d):
                 continue
 
             for c in h_match + v_match:
-                nouvelle_grille[c[1]][c[0]] = -1
+                if nouvelle_grille[c[1]][c[0]] != -1:
+                    nouvelle_grille[c[1]][c[0]] = -1
+                    total_bonbons_supprimes += 1
 
-    return nouvelle_grille
+    return nouvelle_grille, total_bonbons_supprimes
 
 
 def jeu_est_bloque(grille: liste_2d) -> bool:
@@ -402,7 +406,7 @@ def ajouter_bonbons_aleatoires(grille: liste_2d, nb_type_bonbons: int):
 def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d:
     """
     Supprime les bonbons en ligne, fait tomber les bonbons et complète les trous avec des nouveaux bonbons
-    Renvoie la nouvelle grille
+    Renvoie la nouvelle grille et le nombre de bonbons supprimés
 
     Params:
         grille (liste 2D) : la grille d'origine
@@ -410,12 +414,13 @@ def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d
 
     Returns:
         nouvelle_grille (liste 2D) : la grille transformée
+        bonbons_supprimes (int) : nombre de bonbons supprimés
 
     """
-    nouvelle_grille = supprimer_bonbons_en_ligne(grille)
+    nouvelle_grille, bonbons_supprimes = supprimer_bonbons_en_ligne(grille)
     appliquer_gravite(nouvelle_grille)
     ajouter_bonbons_aleatoires(nouvelle_grille, nb_type_bonbons)
-    return nouvelle_grille
+    return nouvelle_grille, bonbons_supprimes
 
 
 if __name__ == "__main__":
