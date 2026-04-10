@@ -33,6 +33,7 @@ class Storage:
             file.write(
                 "\n".join(f"{key}:{item}" for key, item in default_settings.items())
             )
+        self.load_file_storage()
         self.is_first_time = False
 
     def load_file_storage(self):
