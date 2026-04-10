@@ -51,9 +51,8 @@ class CandyCrush:
         self.canvas.create_image(0, 0, image=self.bg_img, anchor="nw")
         self.grille_view = None
 
-        self.root.update()
-
         if storage.is_first_time:
+            self.root.update()
             self.ouvrir_parametres()
         else:
             self.lancer_jeu()
@@ -196,10 +195,10 @@ class ParametresWindow(tk.Toplevel):
 
         frame = tk.Frame(self)
         frame.pack(pady=30)
-        ttk.Button(frame, text="Annuler", width=9, command=self.destroy).grid(
+        ttk.Button(frame, text="Valider et jouer", width=15, command=self.valider).grid(
             row=0, column=0, padx=5
         )
-        ttk.Button(frame, text="Valider et jouer", width=15, command=self.valider).grid(
+        ttk.Button(frame, text="Annuler", width=9, command=self.destroy).grid(
             row=0, column=1, padx=5
         )
 
