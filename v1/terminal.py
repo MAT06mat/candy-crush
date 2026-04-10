@@ -5,15 +5,18 @@ from time import sleep
 def candy_crush(un_fichier, nb_iter):
     # Choix de la grille de départ
     choix_grille = input(
-        """Taper :
-        - f pour charger le fichier par défaut 
-        - a pour générer une grille aléatoire
-        - un autre caractère pour quitter le programme
-    """
+        "Tapez :\n"
+        "    - f pour charger le fichier par défaut\n"
+        "    - a pour générer une grille aléatoire\n"
+        "    - un autre caractère pour quitter le programme\n"
+        ">>> "
     )
+
     # Initialisation des variables
     score = 0
-    nb_type_bonbons = 6
+    nb_type_bonbons = 5
+    grille = [[]]
+
     if choix_grille == "f":
         grille = f.charger_fichier(un_fichier)
     elif choix_grille == "a":
@@ -27,7 +30,7 @@ def candy_crush(un_fichier, nb_iter):
 
         # Boucle pour chaque tour de jeu
         while nb_iter > 0 and not f.jeu_est_bloque(grille):
-            print(f"Score actuel : {score} \n Il reste {nb_iter} coup(s)")
+            print(f"Score actuel : {score}\nIl reste {nb_iter} coup(s)")
 
             # Gestion du déplacement
             pos_i, pos_f = f.demander_mouvement()

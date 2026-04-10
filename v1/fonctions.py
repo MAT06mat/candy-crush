@@ -55,7 +55,7 @@ def generer_grille(m: int, n: int, nb_couleurs: int = 4) -> liste_2d:
     for y in range(m):
         ligne = []
         for x in range(n):
-            couleurs = list(range(n))
+            couleurs = list(range(nb_couleurs))
 
             if x >= 2:
                 if ligne[x - 2] == ligne[x - 1] and ligne[x - 1] in couleurs:
@@ -403,7 +403,7 @@ def ajouter_bonbons_aleatoires(grille: liste_2d, nb_type_bonbons: int):
             j += 1
 
 
-def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int) -> liste_2d:
+def calculer_nouvelle_grille(grille: liste_2d, nb_type_bonbons: int):
     """
     Supprime les bonbons en ligne, fait tomber les bonbons et complète les trous avec des nouveaux bonbons
     Renvoie la nouvelle grille et le nombre de bonbons supprimés
