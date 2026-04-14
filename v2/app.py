@@ -4,7 +4,7 @@ from font_manager import FontManager
 from fonctions import *
 from utils import *
 from storage import storage
-import math, time
+import math
 
 # --- Configuration Visuelle ---
 GAP = 4
@@ -250,6 +250,8 @@ class Grille:
         self.items = {}  # Dictionnaire {(x, y): canvas_id}
         self.is_animating = False
         self.score = 0
+        self.partie_finie = False
+        self.dernier_score = 0
 
         # Calcul dynamique du padding pour centrer la grille
         self.set_size(sw, sh)
@@ -325,6 +327,67 @@ class Grille:
             self.px - 176, self.py + 145, window=btn_menu, tags="dynamic"
         )
 
+        if self.partie_finie:
+            pos_x = self.width
+            pos_y = 0
+            shadow = self.get_asset("shadow")
+            frame = self.get_asset("frame")
+            center_x = self.width // 2
+            center_y = self.height // 2
+
+            while pos_x > 0:
+                pos_x -= 960
+                while pos_y < self.height:
+                    self.canvas.create_image(
+                        pos_x, pos_y, image=shadow, anchor="nw", tags="dynamic"
+                    )
+                    pos_y += 540
+                pos_y = 0
+
+            x = center_x - 339
+            y = center_y - 251
+            self.canvas.create_image(x, y, image=frame, anchor="nw", tags="dynamic")
+
+            self.canvas.create_text(
+                center_x - 38,
+                center_y - 184,
+                text="Fin",
+                font=("candice", 34, "bold"),
+                fill="#143a7c",
+                anchor="w",
+                tags="dynamic coups",
+            )
+
+            self.canvas.create_text(
+                center_x - 240,
+                center_y - 80,
+                text=f"Score de la partie : {self.score}",
+                font=("candice", 26, "bold"),
+                fill="#651a33",
+                anchor="w",
+                tags="dynamic coups",
+            )
+
+            self.canvas.create_text(
+                center_x - 240,
+                center_y - 20,
+                text=f"Meilleur score : {storage.get("meilleur_score")}",
+                font=("candice", 26, "bold"),
+                fill="#651a33",
+                anchor="w",
+                tags="dynamic coups",
+            )
+
+            self.canvas.create_text(
+                center_x - 240,
+                center_y + 40,
+                text=f"Dernier score : {self.dernier_score}",
+                font=("candice", 26, "bold"),
+                fill="#651a33",
+                anchor="w",
+                tags="dynamic coups",
+            )
+
     def confirmer_quitter(self):
         """Demande confirmation avant de quitter la partie en cours."""
         rep = messagebox.askyesno(
@@ -358,7 +421,9 @@ class Grille:
         self.get_asset("selected", "v2/assets/selected.png", SIZE + 2 * GAP)
         self.get_asset("topbar", "v2/assets/elements/topbar.png", 1024)
         self.get_asset("topbar-part", "v2/assets/elements/topbar-part.png", 256)
+        self.get_asset("frame", "v2/assets/elements/frame.png", 679)
         self.get_asset("small-frame", "v2/assets/elements/small-frame.png", 163)
+        self.get_asset("shadow", "v2/assets/elements/shadow.png", 960)
 
     def dessiner_plateau(self):
         """Dessine les tuiles de la grille en utilisant les offsets px et py."""
@@ -596,16 +661,10 @@ class Grille:
                 if not meilleur_score.isdigit() or self.score > int(meilleur_score):
                     meilleur_score = str(self.score)
                     storage.set("meilleur_score", meilleur_score)
+                self.dernier_score = storage.get("dernier_score")
                 storage.set("dernier_score", self.score)
-
-                print("##########################")
-                print("Fin de la partie")
-                print("Score :", self.score)
-                print("Meilleur score :", meilleur_score)
-                print("##########################")
-
-                time.sleep(0.5)
-                exit()
+                self.partie_finie = True
+                self.root.after(500, self.recharger_composant)
             else:
                 self.actualiser_bindings()
 
