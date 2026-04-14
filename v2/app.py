@@ -4,7 +4,7 @@ from font_manager import FontManager
 from fonctions import *
 from utils import *
 from storage import storage
-import math
+import math, time
 
 # --- Configuration Visuelle ---
 GAP = 4
@@ -97,12 +97,14 @@ class CandyCrush:
         h = int(storage.get("lignes"))
         l = int(storage.get("colonnes"))
         n = int(storage.get("nb_bonbons"))
+        coups = int(storage.get("coups"))
 
         grille_donnees = generer_grille(h, l, n)
         self.grille_view = Grille(
             self.canvas,
             grille_donnees,
             n,
+            coups,
             self.width,
             self.height,
             self.ouvrir_parametres,
@@ -206,10 +208,16 @@ class ParametresWindow(tk.Toplevel):
         try:
             h, l, n = self.val_h.get(), self.val_l.get(), self.val_n.get()
             c = int(self.val_coups.get())
+            if c <= 0:
+                raise ValueError()
+            if c > 999999:
+                c = 999999
             self.callback_valider(h, l, n, c)
             self.destroy()
         except ValueError:
-            messagebox.showerror("Erreur", "Le nombre de coups doit être un entier.")
+            messagebox.showerror(
+                "Erreur", "Le nombre de coups doit être un entier strictement positif."
+            )
 
 
 class Grille:
@@ -217,7 +225,7 @@ class Grille:
     Gère l'affichage graphique de la grille, les animations et les interactions utilisateur.
     """
 
-    def __init__(self, canvas: tk.Canvas, grille, nb_bonbons, sw, sh, callback_menu):
+    def __init__(self, canvas: tk.Canvas, grille, nb_bonbons, coups, sw, sh, callback):
         """
         Initialise le moteur graphique du plateau de jeu.
 
@@ -225,14 +233,17 @@ class Grille:
             canvas (Canvas): Le parent Tkinter.
             grille (list): Liste 2D représentant les bonbons.
             nb_bonbons (int): Nombre de types de bonbons.
+            coups (int): Nombre de coups restant
             sw (int): Largeur de la fenêtre
             sh (int): Hauteur de la fenêtre
+            callback (func): Fonction pour ouvrir le menu
         """
         self.canvas = canvas
         self.root = canvas.winfo_toplevel()
         self.grille = grille
         self.nb_bonbons = nb_bonbons
-        self.callback_menu = callback_menu
+        self.callback_menu = callback
+        self.coups_restant = coups
 
         self.bonbon_choisi = None  # Stocke (x, y) du premier bonbon cliqué
         self.assets_cache = {}  # Cache pour éviter de recharger les images
@@ -293,18 +304,25 @@ class Grille:
 
         self.draw_score()
 
+        # Frame des coups restants
+        small_frame = self.get_asset("small-frame")
+        self.canvas.create_image(
+            self.px - 218, self.py - 2, image=small_frame, anchor="nw", tags="dynamic"
+        )
+        self.draw_coups_restant()
+
         # Bouton Quitter
         btn_quitter = ttk.Button(
             self.root, text="Quitter", command=self.confirmer_quitter
         )
         self.canvas.create_window(
-            self.px - 100, self.py + 34, window=btn_quitter, tags="dynamic"
+            self.px - 96, self.py + 145, window=btn_quitter, tags="dynamic"
         )
 
         # Bouton Menu avec confirmation
         btn_menu = ttk.Button(self.root, text="Réglages", command=self.callback_menu)
         self.canvas.create_window(
-            self.px - 100, self.py, window=btn_menu, tags="dynamic"
+            self.px - 176, self.py + 145, window=btn_menu, tags="dynamic"
         )
 
     def confirmer_quitter(self):
@@ -340,6 +358,7 @@ class Grille:
         self.get_asset("selected", "v2/assets/selected.png", SIZE + 2 * GAP)
         self.get_asset("topbar", "v2/assets/elements/topbar.png", 1024)
         self.get_asset("topbar-part", "v2/assets/elements/topbar-part.png", 256)
+        self.get_asset("small-frame", "v2/assets/elements/small-frame.png", 163)
 
     def dessiner_plateau(self):
         """Dessine les tuiles de la grille en utilisant les offsets px et py."""
@@ -435,6 +454,21 @@ class Grille:
             tags="dynamic score",
         )
 
+    def draw_coups_restant(self):
+        """Actualise le texte des coups restant"""
+
+        self.canvas.delete("coups")
+        self.canvas.create_text(
+            self.px - 192,
+            self.py + 62,
+            text=f"Coups :\n{int(self.coups_restant)}",
+            font=("candice", 22, "bold"),
+            justify="center",
+            fill="#2F6D0F",
+            anchor="w",
+            tags="dynamic coups",
+        )
+
     def animate_move(self, movements, step=0, callback=None):
         """
         Déplace fluidement un ou plusieurs objets sur le canvas.
@@ -492,6 +526,8 @@ class Grille:
                 )
                 echanger_deux_bonbons(self.grille, (x, y), (x_prev, y_prev))
             else:
+                self.coups_restant -= 1
+                self.draw_coups_restant()
                 # Mouvement validé : mise à jour du dictionnaire d'items
                 self.items[(x, y)], self.items[(x_prev, y_prev)] = id2, id1
                 self.resolve_board(nouvelle, (x, y), (x_prev, y_prev))
@@ -539,6 +575,7 @@ class Grille:
 
                         to_destroy.append((x, y))
                     elif new != old:
+                        new_score += 5
                         to_transform.append((x, y, new))
 
         scores = create_animation(
@@ -552,7 +589,26 @@ class Grille:
 
         if not to_destroy and not to_transform:
             self.is_animating = False
-            self.actualiser_bindings()
+
+            if self.coups_restant <= 0:
+                meilleur_score = storage.get("meilleur_score")
+                self.score = int(self.score)
+                if not meilleur_score.isdigit() or self.score > int(meilleur_score):
+                    meilleur_score = str(self.score)
+                    storage.set("meilleur_score", meilleur_score)
+                storage.set("dernier_score", self.score)
+
+                print("##########################")
+                print("Fin de la partie")
+                print("Score :", self.score)
+                print("Meilleur score :", meilleur_score)
+                print("##########################")
+
+                time.sleep(0.5)
+                exit()
+            else:
+                self.actualiser_bindings()
+
             return
 
         self.animate_destruction(
@@ -568,7 +624,7 @@ class Grille:
             step (int): Étape actuelle de l'animation.
         """
         if step >= len(scores):
-            self.score = final
+            self.score = int(final)
             self.draw_score()
             return
 
