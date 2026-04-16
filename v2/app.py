@@ -4,6 +4,8 @@ from font_manager import FontManager
 from fonctions import *
 from utils import *
 from storage import storage
+from button import CanvasButton, SmallCanvasButton, CanvasCircleHitBox
+from assets import assets
 import math
 
 # --- Configuration Visuelle ---
@@ -108,6 +110,7 @@ class CandyCrush:
             self.width,
             self.height,
             self.ouvrir_parametres,
+            self.lancer_jeu,
         )
 
     def on_configure(self, event):
@@ -225,7 +228,9 @@ class Grille:
     Gère l'affichage graphique de la grille, les animations et les interactions utilisateur.
     """
 
-    def __init__(self, canvas: tk.Canvas, grille, nb_bonbons, coups, sw, sh, callback):
+    def __init__(
+        self, canvas: tk.Canvas, grille, nb_bonbons, coups, sw, sh, callback, lancer_jeu
+    ):
         """
         Initialise le moteur graphique du plateau de jeu.
 
@@ -243,6 +248,7 @@ class Grille:
         self.grille = grille
         self.nb_bonbons = nb_bonbons
         self.callback_menu = callback
+        self.callback_lancer_jeu = lancer_jeu
         self.coups_restant = coups
 
         self.bonbon_choisi = None  # Stocke (x, y) du premier bonbon cliqué
@@ -282,11 +288,11 @@ class Grille:
         Ajoute des éléments UI (boutons, texte) par-dessus le fond.
         """
         # Ajout de la topbar
-        topbar = self.get_asset("topbar")
+        topbar = assets.get("topbar")
         pos_x = self.width - 1024
         self.canvas.create_image(pos_x, 0, image=topbar, anchor="nw", tags="dynamic")
 
-        topbar_part = self.get_asset("topbar-part")
+        topbar_part = assets.get("topbar-part")
         while pos_x > 0:
             pos_x -= 255
             self.canvas.create_image(
@@ -307,31 +313,50 @@ class Grille:
         self.draw_score()
 
         # Frame des coups restants
-        small_frame = self.get_asset("small-frame")
+        small_frame = assets.get("small-frame")
         self.canvas.create_image(
             self.px - 218, self.py - 2, image=small_frame, anchor="nw", tags="dynamic"
         )
         self.draw_coups_restant()
 
-        # Bouton Quitter
-        btn_quitter = ttk.Button(
-            self.root, text="Quitter", command=self.confirmer_quitter
-        )
-        self.canvas.create_window(
-            self.px - 96, self.py + 145, window=btn_quitter, tags="dynamic"
-        )
+        button_y_start = self.py + 134
+
+        if self.partie_finie or self.coups_restant <= 0:
+            # Bouton Rejouer
+            SmallCanvasButton(
+                self.canvas,
+                self.px - 205,
+                button_y_start,
+                "Rejouer",
+                self.callback_lancer_jeu,
+            )
+            button_y_start += 46
 
         # Bouton Menu avec confirmation
-        btn_menu = ttk.Button(self.root, text="Réglages", command=self.callback_menu)
-        self.canvas.create_window(
-            self.px - 176, self.py + 145, window=btn_menu, tags="dynamic"
+        SmallCanvasButton(
+            self.canvas,
+            self.px - 205,
+            button_y_start,
+            "Réglages",
+            self.callback_menu,
+        )
+
+        button_y_start += 46
+
+        # Bouton Quitter
+        SmallCanvasButton(
+            self.canvas,
+            self.px - 205,
+            button_y_start,
+            "Quitter",
+            self.confirmer_quitter,
         )
 
         if self.partie_finie:
             pos_x = self.width
             pos_y = 0
-            shadow = self.get_asset("shadow")
-            frame = self.get_asset("frame")
+            shadow = assets.get("shadow")
+            frame = assets.get("frame")
             center_x = self.width // 2
             center_y = self.height // 2
 
@@ -349,53 +374,86 @@ class Grille:
             self.canvas.create_image(x, y, image=frame, anchor="nw", tags="dynamic")
 
             self.canvas.create_text(
+                center_x - 34,
+                center_y - 180,
+                text="Fin",
+                font=("candice", 34, "bold"),
+                fill="#fefefe",
+                anchor="w",
+                tags="dynamic",
+            )
+            self.canvas.create_text(
                 center_x - 38,
                 center_y - 184,
                 text="Fin",
                 font=("candice", 34, "bold"),
                 fill="#143a7c",
                 anchor="w",
-                tags="dynamic coups",
+                tags="dynamic",
             )
 
             self.canvas.create_text(
                 center_x - 240,
                 center_y - 80,
                 text=f"Score de la partie : {self.score}",
-                font=("candice", 26, "bold"),
-                fill="#651a33",
+                font=("candice", 26),
+                fill="#76203c",
                 anchor="w",
-                tags="dynamic coups",
+                tags="dynamic",
             )
 
             self.canvas.create_text(
                 center_x - 240,
                 center_y - 20,
                 text=f"Meilleur score : {storage.get("meilleur_score")}",
-                font=("candice", 26, "bold"),
-                fill="#651a33",
+                font=("candice", 26),
+                fill="#76203c",
                 anchor="w",
-                tags="dynamic coups",
+                tags="dynamic",
             )
 
             self.canvas.create_text(
                 center_x - 240,
                 center_y + 40,
                 text=f"Dernier score : {self.dernier_score}",
-                font=("candice", 26, "bold"),
-                fill="#651a33",
+                font=("candice", 26),
+                fill="#76203c",
                 anchor="w",
-                tags="dynamic coups",
+                tags="dynamic",
             )
+
+            CanvasButton(
+                self.canvas,
+                center_x - 260,
+                center_y + 105,
+                "Rejouer",
+                self.callback_lancer_jeu,
+            )
+
+            CanvasButton(
+                self.canvas,
+                center_x + 12,
+                center_y + 105,
+                "Quitter",
+                lambda: self.root.after(10, self.root.destroy),
+            )
+
+            def close():
+                self.partie_finie = False
+                self.recharger_composant()
+
+            CanvasCircleHitBox(self.canvas, center_x + 287, center_y - 162, 37, close)
 
     def confirmer_quitter(self):
         """Demande confirmation avant de quitter la partie en cours."""
-        rep = messagebox.askyesno(
-            "Quitter",
-            "Voulez-vous vraiment quitter la partie en cours ?\nLa partie actuelle sera perdue.",
-        )
+        rep = True
+        if not self.partie_finie and self.coups_restant > 0:
+            rep = messagebox.askyesno(
+                "Quitter",
+                "Voulez-vous vraiment quitter la partie en cours ?\nLa partie actuelle sera perdue.",
+            )
         if rep:
-            self.root.destroy()
+            self.root.after(10, self.root.destroy)
 
     def create_outlined_text(
         self, x, y, *args, fill="white", outline="black", outline_width=3, **kwargs
@@ -410,20 +468,20 @@ class Grille:
         """Charge toutes les images nécessaires (bonbons, bonus, tuiles) dans le cache."""
         for _, color in COLOR_PATH.items():
             for bonus in ["", "-h", "-v", "-p"]:
-                path = f"v2/assets/candies/{color + bonus}.png"
-                self.get_asset(color + bonus, path)
+                path = f"candies/{color + bonus}.png"
+                assets.load(color + bonus, path)
 
-        self.get_asset("rainbow", "v2/assets/candies/rainbow.png")
+        assets.load("rainbow", "candies/rainbow.png")
 
         for tuile in TUILES_PATH:
-            self.get_asset(tuile, f"v2/assets/grid/{tuile}.png", size=SIZE + GAP)
+            assets.load(tuile, f"grid/{tuile}.png", SIZE + GAP)
 
-        self.get_asset("selected", "v2/assets/selected.png", SIZE + 2 * GAP)
-        self.get_asset("topbar", "v2/assets/elements/topbar.png", 1024)
-        self.get_asset("topbar-part", "v2/assets/elements/topbar-part.png", 256)
-        self.get_asset("frame", "v2/assets/elements/frame.png", 679)
-        self.get_asset("small-frame", "v2/assets/elements/small-frame.png", 163)
-        self.get_asset("shadow", "v2/assets/elements/shadow.png", 960)
+        assets.load("selected", "selected.png", SIZE + 2 * GAP)
+        assets.load("topbar", "elements/topbar.png")
+        assets.load("topbar-part", "elements/topbar-part.png")
+        assets.load("frame", "elements/frame.png")
+        assets.load("small-frame", "elements/small-frame.png")
+        assets.load("shadow", "elements/shadow.png")
 
     def dessiner_plateau(self):
         """Dessine les tuiles de la grille en utilisant les offsets px et py."""
@@ -441,7 +499,7 @@ class Grille:
                 elif x == len(self.grille[0]) - 1:
                     tuile_type += "R"
 
-                img_tuile = self.get_asset(tuile_type if tuile_type else "C")
+                img_tuile = assets.get(tuile_type if tuile_type else "C")
                 self.canvas.create_image(
                     px_item - GAP / 2,
                     py_item - GAP / 2,
@@ -455,24 +513,6 @@ class Grille:
         for y in range(len(self.grille)):
             for x in range(len(self.grille[y])):
                 self.creer_bonbon_item(x, y)
-
-    def get_asset(self, index: str, file: str | None = None, size=SIZE) -> PhotoImage:
-        """
-        Récupère une image redimensionnée ou la crée si elle n'existe pas.
-
-        Args:
-            index (str): Identifiant unique de l'image.
-            file (str): Chemin du fichier (si création).
-            size (int): Taille cible en pixels.
-        """
-        if index not in self.assets_cache and file:
-            raw = PhotoImage(file=file)
-            # Calcul du ratio pour un redimensionnement propre via zoom/subsample
-            diviseur_commun = math.gcd(raw.width(), size)
-            self.assets_cache[index] = raw.zoom(size // diviseur_commun).subsample(
-                raw.width() // diviseur_commun
-            )
-        return self.assets_cache[index]
 
     def get_pixel_pos(self, x, y):
         """Convertit les coordonnées de la grille (x, y) en position pixels (px, py)."""
@@ -499,11 +539,11 @@ class Grille:
         if val == "__":
             return None
         if val == "r_":
-            return self.get_asset("rainbow")
+            return assets.get("rainbow")
 
         color_name = COLOR_PATH.get(val[0], "red")
         suffix = f"-{val[1]}" if len(val) > 1 and val[1] in "vhp" else ""
-        return self.get_asset(color_name + suffix)
+        return assets.get(color_name + suffix)
 
     def draw_score(self):
         """Actualise le texte du score"""
@@ -664,6 +704,7 @@ class Grille:
                 self.dernier_score = storage.get("dernier_score")
                 storage.set("dernier_score", self.score)
                 self.partie_finie = True
+                self.supprimer_bindings()
                 self.root.after(500, self.recharger_composant)
             else:
                 self.actualiser_bindings()
@@ -794,7 +835,7 @@ class Grille:
             self.canvas.create_image(
                 px - GAP,
                 py - GAP,
-                image=self.get_asset("selected"),
+                image=assets.get("selected"),
                 anchor="nw",
                 tags="selector dynamic",
             )
@@ -804,13 +845,18 @@ class Grille:
         for (x, y), item_id in self.items.items():
             self.canvas.tag_bind(item_id, "<Button-1>", self.create_callback(x, y))
 
+    def supprimer_bindings(self):
+        """Supprimer les clics sur les bonbons de la grille."""
+        for _, item_id in self.items.items():
+            self.canvas.tag_unbind(item_id, "<Button-1>")
+
     def create_callback(self, x, y):
         """Crée une fonction de rappel pour le clic sur un bonbon spécifique."""
         return lambda e: self.on_click(x, y)
 
     def on_click(self, x, y):
         """Gère la logique de sélection et de déplacement au clic."""
-        if self.is_animating:
+        if self.is_animating or self.coups_restant <= 0:
             return
 
         if self.bonbon_choisi == (x, y):
