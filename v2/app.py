@@ -305,8 +305,8 @@ class Grille:
             42,
             text="Candy Crush",
             font=("candice", 36, "bold"),
-            fill="#F3DE76",
-            outline="#472E09",
+            fill="#92143e",
+            outline="#febfc7",
             tags="dynamic",
         )
 
@@ -382,6 +382,7 @@ class Grille:
                 anchor="w",
                 tags="dynamic",
             )
+
             self.canvas.create_text(
                 center_x - 38,
                 center_y - 184,
@@ -455,13 +456,8 @@ class Grille:
         if rep:
             self.root.after(10, self.root.destroy)
 
-    def create_outlined_text(
-        self, x, y, *args, fill="white", outline="black", outline_width=3, **kwargs
-    ):
-        for teta in [n * math.pi / 4 for n in range(8)]:
-            dx = outline_width * math.cos(teta)
-            dy = outline_width * math.sin(teta)
-            self.canvas.create_text(x + dx, y + dy, fill=outline, *args, **kwargs)
+    def create_outlined_text(self, x, y, *args, fill, outline, **kwargs):
+        self.canvas.create_text(x + 2, y + 2, fill=outline, *args, **kwargs)
         self.canvas.create_text(x, y, fill=fill, *args, **kwargs)
 
     def charger_assets(self):
@@ -554,7 +550,7 @@ class Grille:
             48,
             text=f"Score : {int(self.score)}",
             font=("candice", 26, "bold"),
-            fill="#2F6D0F",
+            fill="#76203c",
             anchor="w",
             tags="dynamic score",
         )
@@ -569,7 +565,7 @@ class Grille:
             text=f"Coups :\n{int(self.coups_restant)}",
             font=("candice", 22, "bold"),
             justify="center",
-            fill="#2F6D0F",
+            fill="#76203c",
             anchor="w",
             tags="dynamic coups",
         )
