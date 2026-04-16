@@ -49,7 +49,7 @@ class CandyCrush:
         )
         self.canvas.pack(fill="both", expand=True)
 
-        self.bg_img = PhotoImage(file="v2/assets/backgrounds/background.png")
+        self.bg_img = PhotoImage(file="v2/assets/background.png")
         self.canvas.create_image(0, 0, image=self.bg_img, anchor="nw")
         self.grille_view = None
 
