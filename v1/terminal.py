@@ -68,6 +68,7 @@ def candy_crush(un_fichier, nb_iter):
                     sleep(0.5)
 
         print("\nJeu terminé...\n")
+        print(f"Score final : {score}\n")
         input("<Entrer> pour fermer")
 
 
