@@ -6,7 +6,6 @@ from utils import *
 from storage import storage
 from button import CanvasButton, SmallCanvasButton, CanvasCircleHitBox
 from assets import assets
-import math
 
 # --- Configuration Visuelle ---
 GAP = 4
@@ -690,6 +689,10 @@ class Grille:
 
         if not to_destroy and not to_transform:
             self.is_animating = False
+
+            if jeu_est_bloque(self.grille):
+                print("Le jeu est bloqué !\nFin de la partie...")
+                self.coups_restant = 0
 
             if self.coups_restant <= 0:
                 meilleur_score = storage.get("meilleur_score")

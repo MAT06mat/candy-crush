@@ -64,19 +64,19 @@ def test_echanger_deux_bonbons_3():
 def test_supprimer_bonbons_ligne_alignement_3_vertical():
     grille_1 = [[1, 2], [1, 3], [1, 4]]
     grille_2 = [[-1, 2], [-1, 3], [-1, 4]]
-    return grille_2 == supprimer_bonbons_en_ligne(grille_1)
+    return (grille_2, 3) == supprimer_bonbons_en_ligne(grille_1)
 
 
 def test_supprimer_bonbons_ligne_alignement_3_horizontal():
     grille_1 = [[2, 2, 2], [4, 5, 6]]
     grille_2 = [[-1, -1, -1], [4, 5, 6]]
-    return grille_2 == supprimer_bonbons_en_ligne(grille_1)
+    return (grille_2, 3) == supprimer_bonbons_en_ligne(grille_1)
 
 
 def test_supprimer_bonbons_ligne_alignement_3_vertical_bord_bas():
     grille_1 = [[0, 1], [2, 1], [3, 1]]
     grille_2 = [[0, -1], [2, -1], [3, -1]]
-    return grille_2 == supprimer_bonbons_en_ligne(grille_1)
+    return (grille_2, 3) == supprimer_bonbons_en_ligne(grille_1)
 
 
 def test_supprimer_bonbons_ligne_double_alignement_independant():
@@ -90,7 +90,7 @@ def test_supprimer_bonbons_ligne_double_alignement_independant():
         [1, 2, 3, 1, -1],
         [5, 4, 3, 1, -1],
     ]
-    return supprimer_bonbons_en_ligne(grille_1) == grille_2
+    return supprimer_bonbons_en_ligne(grille_1) == (grille_2, 6)
 
 
 # --- TESTS DE CAS LIMITES ---
@@ -99,7 +99,7 @@ def test_supprimer_bonbons_ligne_double_alignement_independant():
 def test_supprimer_bonbons_ligne_aucun_alignement():
     grille_1 = [[1, 2, 1], [2, 1, 2]]
     grille_2 = [[1, 2, 1], [2, 1, 2]]
-    return grille_2 == supprimer_bonbons_en_ligne(grille_1)
+    return (grille_2, 0) == supprimer_bonbons_en_ligne(grille_1)
 
 
 def test_jeu_bloque_defaut():
@@ -134,13 +134,13 @@ def test_jeu_bloque_defaut_5():
 
 def test_calcul_nouvelle_grille_grille_instable():
     grille = [[1, 2, 3], [2, 3, 4], [0, 0, 0]]
-    ng = calculer_nouvelle_grille(grille, 1)
+    ng, _ = calculer_nouvelle_grille(grille, 1)
     return ng[2][0] == 2 and ng[2][1] == 3 and ng[2][2] == 4
 
 
 def test_calcul_nouvelle_grille_grille_stable():
     grille = [[0, 1, 2], [1, 2, 3], [2, 3, 4]]
-    nouvelle_grille = calculer_nouvelle_grille(grille, 1)
+    nouvelle_grille, _ = calculer_nouvelle_grille(grille, 1)
     return grille_est_stable(grille, nouvelle_grille)
 
 
