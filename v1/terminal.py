@@ -74,4 +74,4 @@ def candy_crush(un_fichier, nb_iter):
         input("<Entrer> pour fermer ")
 
 
-candy_crush("data/g.csv", 4)
+candy_crush("data/exemple_grille.csv", 30)
