@@ -41,6 +41,8 @@ class CandyCrush:
         self.root.geometry(f"{self.width}x{self.height}+0+0")
         self.root.minsize(1200, 675)
         self.root.maxsize(1920, 1080)
+        self.icon = PhotoImage(file="v2/assets/candies/red.png")
+        self.root.iconphoto(True, self.icon)
 
         self.root.bind("<Configure>", self.on_configure)
 
@@ -666,14 +668,12 @@ class Grille:
                     if new == "__":
                         new_score += 5
                         if old[1] != "_" or old[0] == "r":
-                            match old[1]:
-                                case "h" | "v":
-                                    new_score += 10
-                                case "p":
-                                    new_score += 20
-                                case _:
-                                    new_score += 95
-
+                            if old[1] == "h" or old[1] == "v":
+                                new_score += 10
+                            elif old[1] == "p":
+                                new_score += 20
+                            else:
+                                new_score += 95
                         to_destroy.append((x, y))
                     elif new != old:
                         new_score += 5
