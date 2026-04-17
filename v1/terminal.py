@@ -67,9 +67,11 @@ def candy_crush(un_fichier, nb_iter):
                     f.afficher_grille(grille, nb_type_bonbons)
                     sleep(0.5)
 
+        f.afficher_grille(grille, nb_type_bonbons)
+
         print("\nJeu terminé...\n")
         print(f"Score final : {score}\n")
-        input("<Entrer> pour fermer")
+        input("<Entrer> pour fermer ")
 
 
-candy_crush("data/exemple_grille.csv", 30)
+candy_crush("data/g.csv", 4)
