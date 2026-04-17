@@ -68,7 +68,7 @@ Créer une nouvelle grille (duplication de la première)
 Supprimer tous les bonbons qui forment une ligne de 3 par rapport à la première grille
 Si bonbons supprimés :
     Appliquer la gravité et descendre tous les bonbons volants
-    Remplir les emplacements vides par de nouveux bonbons aléatoires
+    Remplir les emplacements vides par de nouveaux bonbons aléatoires
 ```
 
 ## Découpage fonctionnel (liste des fonctions)

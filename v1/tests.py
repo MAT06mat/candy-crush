@@ -73,10 +73,13 @@ def test_supprimer_bonbons_ligne_alignement_3_horizontal():
     return (grille_2, 3) == supprimer_bonbons_en_ligne(grille_1)
 
 
-def test_supprimer_bonbons_ligne_alignement_3_vertical_bord_bas():
+def test_supprimer_bonbons_ligne_alignement_3_vertical_2():
     grille_1 = [[0, 1], [2, 1], [3, 1]]
     grille_2 = [[0, -1], [2, -1], [3, -1]]
     return (grille_2, 3) == supprimer_bonbons_en_ligne(grille_1)
+
+
+# --- TESTS DE CAS LIMITES ---
 
 
 def test_supprimer_bonbons_ligne_double_alignement_independant():
@@ -91,9 +94,6 @@ def test_supprimer_bonbons_ligne_double_alignement_independant():
         [5, 4, 3, 1, -1],
     ]
     return supprimer_bonbons_en_ligne(grille_1) == (grille_2, 6)
-
-
-# --- TESTS DE CAS LIMITES ---
 
 
 def test_supprimer_bonbons_ligne_aucun_alignement():
@@ -230,7 +230,7 @@ assert test_echanger_deux_bonbons_2()
 assert test_echanger_deux_bonbons_3()
 assert test_supprimer_bonbons_ligne_alignement_3_vertical()
 assert test_supprimer_bonbons_ligne_alignement_3_horizontal()
-assert test_supprimer_bonbons_ligne_alignement_3_vertical_bord_bas()
+assert test_supprimer_bonbons_ligne_alignement_3_vertical_2()
 assert test_supprimer_bonbons_ligne_double_alignement_independant()
 assert test_supprimer_bonbons_ligne_aucun_alignement()
 assert test_jeu_bloque_defaut()
