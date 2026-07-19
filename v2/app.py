@@ -407,7 +407,7 @@ class Grille:
             self.canvas.create_text(
                 center_x - 240,
                 center_y - 20,
-                text=f"Meilleur score : {storage.get("meilleur_score")}",
+                text=f"Meilleur score : {storage.get('meilleur_score')}",
                 font=("candice", 26),
                 fill="#76203c",
                 anchor="w",
